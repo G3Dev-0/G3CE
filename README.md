@@ -82,7 +82,7 @@ Home page: https://www.opengl.org/resources/libraries/glut/glut_downloads.php
 
 - **GLAD**\
 OpenGL loader generator\
-Home page: https://glew.sourceforge.net/
+Home page: https://glad.dav1d.de/
 
 - **GLFW**\
 Window context and input handler\
