@@ -1,5 +1,6 @@
 # G3CE
-**G3**Dev's **C** **E**ngine is an OpenGL engine useful for running simulations, creating games and general purpose rendering.
+This is an OpenGL engine useful for running simulations, creating games and general purpose rendering.\
+**G3CE** stands for "**G3**Dev's **C** **E**ngine".
 
 ## Table of Contents
 + [**Using G3CE**](#using-g3ce)
