@@ -25,7 +25,7 @@ add_library(stbi STATIC libs/stbi/stb_image.c)
 # link math to stb_image library otherwise it'll be missing the pow function
 target_link_libraries(stbi PRIVATE -lm)
 
-# add GLFW from the original git repository (downloaded and put into libs/glfw)
+# add GLFW from the original git repository (downloaded and put into libs/glfw) (downloaded from https://github.com/glfw/glfw)
 add_subdirectory(libs/glfw)
 
 # create executable
