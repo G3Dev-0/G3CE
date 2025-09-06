@@ -4,9 +4,9 @@ Window handling with GLFW and OpenGL initialization with GLAD
 */
 
 //#include <GL/glew.h>
-#include <../libs/glad/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <../libs/stbi/stb_image.h>
+#include <stbi/stb_image.h>
 
 #include "engine/core/input.h"
 #include "engine/utils/console.h"

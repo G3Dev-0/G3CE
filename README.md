@@ -1,6 +1,5 @@
 # G3CE
-This is an OpenGL engine useful for running simulations, creating games and general purpose rendering.\
-**G3CE** stands for "**G3**Dev's **C** **E**ngine".
+**G3**Dev's **C** **E**ngine is an OpenGL engine useful for running simulations, creating games and general purpose rendering.
 
 ## Table of Contents
 + [**Using G3CE**](#using-g3ce)
@@ -9,7 +8,11 @@ This is an OpenGL engine useful for running simulations, creating games and gene
     - [**Window**](#window)
     - [**Input**](#input)
     - [**Console**](#console)
+    - [**File**](#file)
+    - [**Shader**](#shader)
+    - [**Mesh**](#mesh)
 + [**Used technologies**](#used-technologies)
++ [**Version history**](#version-history)
 + [**About**](#about)
 
 ### Using G3CE [#](#table-of-contents)
@@ -31,6 +34,12 @@ Those 4 parameters are the initialization, update, render and exit functions for
 - `void main_tick()`: update function, it is called once every frame before clearing the previous frame
 - `void main_draw()`: rendering function, it is called once every frame right after clearing the previous frame
 - `void main_exit()`: exit function, it is called only once after leaving the main loop, before terminating the app
+
+Finally there are two functions:
++ `void app_requestClose()`: requests the app to close.\
+It CANNOT be called outside of the app main loop
++ `void app_terminate()`: closes the app by terminating GLFW.\
+This should NEVER be called and it is used internally by the engine. It's good practice to politely request GLFW to close the program instead on killing it on the fly.
 
 #### Window [#](#table-of-contents)
 This module contains all the GLFW window related functions. For the simplest app you can run, you might even never touch this module, as the main window parameters (`width`, `height` and `title`) are passed to it by the [`app_create()`](#app) function.
@@ -67,6 +76,42 @@ This module has some cooler output functions that allow you to better organize y
 + `void console_error(const char* format, ...)`: error log level (uses the "[ERROR]: " prefix and outputs in red color)
 + `void console_debug(const char* format, ...)`: debug log level (uses the "[DEBUG]: " prefix and outputs in blue color)
 
+#### File [#](#table-of-contents)
+The file module has some file handling utility functions, namely:
++ `bool file_write(char* path, char* content)`: writes content to a file at path ("./file" means it is in "g3ge")
++ `char* file_read(char* path)`: returns the content of a file at path ("./file" means it is in "g3ge"), YOU MUST FREE THE RETURN VALUE by calling stdlib.free()!
++ `int file_remove(char* path)`: removes a file at path ("./file" means it is in "g3ge")
+
+#### Shader [#](#table-of-contents)
+Shaders are the GPU code that allows you to render anything on the screen. They are written in GLSL (GL Shading Language). With this module you can easily load them in code and use them when rendering.
++ `int shader_create(char* vertexPath, char* fragmentPath)`: creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ge") and returns its program ID
++ `void shader_use(int programID)`: activates the given shader
++ `void shader_destroy(int programID)`: destroys the given shader
+
+**Remember: a shader must always be destroyed when not used anymore!**
+
+#### Mesh [#](#table-of-contents)
+With the mesh module, you can easily create simple meshes starting from vertices, indices and a draw mode.
+After creating a mesh you can easily draw the mesh using a certain shader.
++ `Mesh* mesh_create(float* vertices, unsigned int verticesLength, unsigned int* indices, unsigned int indicesLength, int drawMode)`: creates the mesh and returns it\
+Parameters:
+    + **vertices:** the vertices position array
+    + **verticesLength:** the sizeof() of the vertices position array
+    + **indices:** the indices array, specifing the order in which to render the verices
+    + **indicesLength:** the sizeof() of the indices array
+    + **drawMode:** the OpenGL mode to draw the verices (GL_TRIANGLES, GL_QUADS, ...)
+
+    YOU MUST FREE THE VAO BY CALLING mesh_destroy()
++ `void mesh_addVertexAttributeFloat(Mesh* mesh, int attribLocation, int size, float* data, unsigned int dataLength)`: creates a VBO and associates it to a vertex attribute of type int buffer to the specified mesh\
+Parameters:
+    + **attribLocatio:n** the location of the attribute in the shader
+    + **size:** the number of components for each vertex attribute (e.g.: 3 for 3D position, 4 for RGBA colors)
+    + **dataLength:** the sizeof() of the data array
++ `void mesh_destroy(Mesh* mesh)`: destroies the given mesh (VAO)
++ `void mesh_draw(Mesh* mesh, int shader)`: draws the given mesh using the given shader (programID)
+
+**Remember: a mesh must always be destroyed when not used anymore!**
+
 ### Used technologies [#](#table-of-contents)
 - **C**\
 Programming language\
@@ -83,12 +128,16 @@ Home page: https://www.opengl.org/resources/libraries/glut/glut_downloads.php
 
 - **GLAD**\
 OpenGL loader generator\
-Home page: https://glad.dav1d.de/
+Home page: https://glew.sourceforge.net/
 
 - **GLFW**\
 Window context and input handler\
 Home page: https://www.glfw.org/
 
-## About
+### Version history [#](#table-of-contents)
++ **v1.0 b01092025-0:** implemented functions for app handling, window and input
++ **v1.0 b06092025-0:** implemented shader and mesh utilities
+
+### About [#](#table-of-contents)
 Made by G3Dev\
 v1.0 b01092025-0

@@ -1,7 +1,7 @@
 #include "engine/app.h"
-#include "engine/core/window.h"
 #include "engine/core/input.h"
-#include "engine/utils/console.h"
+#include "engine/gfx/mesh.h"
+#include "engine/gfx/shader.h"
 
 #include "main.h"
 
@@ -16,9 +16,28 @@ int main() {
     return 0;
 }
 
+int vao;
+int shader;
+Mesh* mesh;
+
 // init function (called before entering the app main loop)
 void main_init() {
-    
+    float positions[9] = {
+        0.0, 0.5, 0.0,
+        -0.5, 0.0, 0.0,
+        0.5, 0.0, 0.0
+    };
+
+    unsigned int indices[3] = {
+        0, 1, 2
+    };
+
+    // create a mesh
+    mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
+    // mesh_addVertexAttributeFloat(mesh, 1, 3, colors, sizeof(colors));
+
+    // create a shader
+    shader = shader_create("./assets/shaders/default_vertex.glsl", "./assets/shaders/default_fragment.glsl");
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -36,10 +55,11 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    
+    mesh_draw(mesh, shader);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
-    
+    mesh_destroy(mesh);
+    shader_destroy(shader);
 }

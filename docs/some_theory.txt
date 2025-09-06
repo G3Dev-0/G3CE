@@ -1,0 +1,16 @@
+How OpenGL renders:
+
+You can either use the standard rendering pipeline (glBegin(), glVertex(), glEnd()), thus giving every frame the instructions from CPU to GPU.
+
+You can also use VAOs and VBOs.
+How this works:
+- VAO (Vertex Array Object) is an object containing pointers to VBOs and how to use said VBOs
+  (e.g.: VBO for position should be interpreted as a set of floats to be read in triplets,
+  this is specified in the VAO)
+- VBO (Vertex Buffer Object) is a buffer containing some data
+You can link VBOs to a VAO and enable the VAO to render the data contained into the VAO's VBOs
+
+The main advantage in using VAOs and VBOs instead of the standard pipeline is that
+with the standard pipeline you must send the data from CPU to GPU every frame (VERY INEFFICIENT),
+while with VAOs and VBOs you can send the data only once (or middle run when they change),
+reducing the data transfer and thus the performance impact.

@@ -25,16 +25,19 @@ add_library(stbi STATIC libs/stbi/stb_image.c)
 # link math to stb_image library otherwise it'll be missing the pow function
 target_link_libraries(stbi PRIVATE -lm)
 
-# add GLFW from the original git repository (downloaded and put into libs/glfw) (downloaded from https://github.com/glfw/glfw)
+# add GLFW from the original git repository (downloaded and put into libs/glfw)
 add_subdirectory(libs/glfw)
 
 # create executable
 add_executable(${PROJECT_NAME}
     src/main.c
     src/engine/app.c
-    src/engine/core/window.c
     src/engine/core/input.c
+    src/engine/core/window.c
+    src/engine/gfx/mesh.c
+    src/engine/gfx/shader.c
     src/engine/utils/console.c
+    src/engine/utils/file.c
 )
 
 # link the libraries to the project
@@ -44,4 +47,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glad # linked from the previously created static library
     stbi # linked from the previously created static library
     glfw # linked from the loaded subdirectory
+)
+
+# include directories to make include paths fancier
+target_include_directories(${PROJECT_NAME} PRIVATE
+    libs
 )
