@@ -1,5 +1,5 @@
 # G3CE
-**G3**Dev's **C** **E**ngine is an OpenGL engine useful for running simulations, creating games and general purpose rendering.
+**G3**Dev's **C** **E**ngine is an OpenGL engine useful for running simulations, creating games and for general purpose rendering.
 
 ## Table of Contents
 + [**Using G3CE**](#using-g3ce)
@@ -11,6 +11,7 @@
     - [**File**](#file)
     - [**Shader**](#shader)
     - [**Mesh**](#mesh)
++ [**Using the engine**](#using-the-engine)
 + [**Used technologies**](#used-technologies)
 + [**Version history**](#version-history)
 + [**About**](#about)
@@ -112,6 +113,83 @@ Parameters:
 
 **Remember: a mesh must always be destroyed when not used anymore!**
 
+### Using the engine [#](#table-of-contents)
+In order to use the engine you have to create a `main.c` file where you can run all your logic and rendering code.\
+After doing so, you'll be able to start the program by running `cmd/run.sh`. This will build the project and run it using `int main()` function in `main.c` as the program entry point.\
+You can set up a simple program as follows:
+```c
+#include "engine/app.h"
+#include "engine/core/window.h"
+#include "engine/core/input.h"
+#include "engine/gfx/mesh.h"
+#include "engine/gfx/shader.h"
+
+// you can also put those four in a "main.h" file for good practice
+void main_init();
+void main_tick();
+void main_draw();
+void main_exit();
+
+int main() {
+    // create the app
+    app_create(800, 600, "My GLFW Window", 1);
+    // main app loop
+    app_loop(main_init, main_tick, main_draw, main_exit);
+    // close the app when the loop is broken (you can break out of the loop ONLY by calling app_requestClose())
+    app_terminate();
+    
+    return 0;
+}
+
+int vao;
+int shader;
+Mesh* mesh;
+
+// init function (called before entering the app main loop)
+void main_init() {
+    float positions[9] = {
+        0.0, 0.5, 0.0,
+        -0.5, 0.0, 0.0,
+        0.5, 0.0, 0.0
+    };
+
+    unsigned int indices[3] = {
+        0, 1, 2
+    };
+
+    // create a mesh
+    mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
+    // mesh_addVertexAttributeFloat(mesh, 1, 3, colors, sizeof(colors));
+
+    // create a shader
+    shader = shader_create("./assets/shaders/default_vertex.glsl", "./assets/shaders/default_fragment.glsl");
+}
+
+// tick function (called once every frame, here you should put all you update code)
+void main_tick() {
+    // close the app when the ESCAPE key is pressed
+    if (input_isKeyPressed(GLFW_KEY_ESCAPE)) {
+        app_requestClose();
+    }
+
+    // toggle fullscreen mode when the F11 key is pressed
+    if (input_isKeyPressed(GLFW_KEY_F11)) {
+        window_toggleFullscreen();
+    }
+}
+
+// draw function (called once every frame, here you should put all you rendering code)
+void main_draw() {
+    mesh_draw(mesh, shader);
+}
+
+// exit function (called after breaking out from the app main loop, before terminating the app)
+void main_exit() {
+    mesh_destroy(mesh);
+    shader_destroy(shader);
+}
+```
+
 ### Used technologies [#](#table-of-contents)
 - **C**\
 Programming language\
@@ -135,8 +213,8 @@ Window context and input handler\
 Home page: https://www.glfw.org/
 
 ### Version history [#](#table-of-contents)
-+ **v1.0 b01092025-0:** implemented functions for app handling, window and input
 + **v1.0 b06092025-0:** implemented shader and mesh utilities
++ **v1.0 b01092025-0:** implemented functions for app handling, window and input
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
