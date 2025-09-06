@@ -1,4 +1,5 @@
 #include "engine/app.h"
+#include "engine/core/window.h"
 #include "engine/core/input.h"
 #include "engine/gfx/mesh.h"
 #include "engine/gfx/shader.h"
