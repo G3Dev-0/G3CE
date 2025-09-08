@@ -88,6 +88,15 @@ Shaders are the GPU code that allows you to render anything on the screen. They 
 + `int shader_create(char* vertexPath, char* fragmentPath)`: creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ge") and returns its program ID
 + `void shader_use(int programID)`: activates the given shader
 + `void shader_destroy(int programID)`: destroys the given shader
++ `void setBoolean(const int programID, const char* name, bool value)`: sets boolean uniform
++ `void setFloat(const int programID, const char* name, float value)`: sets float uniform
++ `void setInteger(const int programID, const char* name, int value)`: sets integer uniform
++ `void setFloat2(const int programID, const char* name, float value[2])`: sets float vector 2 uniform
++ `void setInteger2(const int programID, const char* name, int value[2])`: sets int vector 2 uniform
++ `void setFloat3(const int programID, const char* name, float value[3])`: sets float vector 3 uniform
++ `void setInteger3(const int programID, const char* name, int value[3])`: sets int vector 3 uniform
++ `void setFloat4(const int programID, const char* name, float value[4])`: sets float vector 4 uniform
++ `void setInteger4(const int programID, const char* name, int value[4])`: sets int vector 4 uniform
 
 **Remember: a shader must always be destroyed when not used anymore!**
 
@@ -213,9 +222,10 @@ Window context and input handler\
 Home page: https://www.glfw.org/
 
 ### Version history [#](#table-of-contents)
++ **v1.0 b08092025-0:** implemented shader uniform handling, fixed offset in vertex attribute location registration
 + **v1.0 b06092025-0:** implemented shader and mesh utilities
 + **v1.0 b01092025-0:** implemented functions for app handling, window and input
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b01092025-0
+v1.0 b08092025-0

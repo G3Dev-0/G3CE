@@ -4,6 +4,7 @@ Contains all the app-related functions
 */
 
 #include "engine/core/window.h"
+#include "engine/gfx/renderer.h"
 
 #include "engine/app.h"
 
@@ -27,7 +28,7 @@ void app_loop(void (*main_init)(), void (*main_tick)(), void (*main_draw)(), voi
 
         // RENDER
         // clear
-        glClearColor(1, 0.9, 0.9, 1);
+        glClearColor(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
         glClear(GL_COLOR_BUFFER_BIT);
         
         main_draw();

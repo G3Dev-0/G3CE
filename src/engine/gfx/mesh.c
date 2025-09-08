@@ -9,6 +9,7 @@ Vertices can then have properties like color, normal and such.
 #include <glad/glad.h>
 
 #include "engine/gfx/shader.h"
+#include "engine/utils/console.h"
 
 #include "engine/gfx/mesh.h"
 
@@ -27,16 +28,17 @@ Mesh* mesh_create(float* vertices, unsigned int verticesLength, unsigned int* in
     Mesh* mesh = (Mesh*) malloc(sizeof(Mesh));
     mesh->vao = vao;
     mesh->vbosCount = 0;
+    mesh->lastOffset = 0;
     // allocate some memory to the vbos array
     mesh->vbos = (int*) malloc(0);
 
     // bind the positions VBO and the EBO to the VAO
 
+    // positions VBO // this binds and unbinds the VAO on its own, as it can also be called elsewhere
+    mesh_addVertexAttributeFloat(mesh, 0, 3, vertices, verticesLength);
+
     // bind VAO
     glBindVertexArray(vao);
-
-    // positions VBO
-    mesh_addVertexAttributeFloat(mesh, 0, 3, vertices, verticesLength);
 
     // EBO
     // generate EBO
@@ -66,6 +68,9 @@ Mesh* mesh_create(float* vertices, unsigned int verticesLength, unsigned int* in
 // size is the number of components for each vertex attribute (e.g.: 3 for 3D position, 4 for RGBA colors)
 // dataLength is the sizeof() of the data array
 void mesh_addVertexAttributeFloat(Mesh* mesh, int attribLocation, int size, float* data, unsigned int dataLength) {
+    // bind VAO
+    glBindVertexArray(mesh->vao);
+    
     // generate VBO
     int vbo;
     glGenBuffers(1, &vbo);
@@ -74,14 +79,23 @@ void mesh_addVertexAttributeFloat(Mesh* mesh, int attribLocation, int size, floa
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, dataLength, data, GL_STATIC_DRAW);
 
+    // save the current stride (used later for automatically handling VBO offsets)
+    unsigned int stride = size * sizeof(float);
+    
     // associate the attribute location (in the shader)
-    glVertexAttribPointer(attribLocation, size, GL_FLOAT, GL_FALSE, size * sizeof(float), NULL);
+    glVertexAttribPointer(attribLocation, size, GL_FLOAT, GL_FALSE, stride, (void*) (mesh->lastOffset));
     glEnableVertexAttribArray(attribLocation);
+
+    // update the nextOffset;
+    mesh->lastOffset += stride;
 
     // add the vbo to the mesh vbos and also update the vbosCount
     mesh->vbosCount++;
     mesh->vbos = (int*) realloc(mesh->vbos, (mesh->vbosCount) * sizeof(int));
     mesh->vbos[(mesh->vbosCount) - 1] = vbo;
+
+    // unbind VAO
+    glBindVertexArray(0);
 }
 
 // destroies the given mesh

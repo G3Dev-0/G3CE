@@ -71,3 +71,50 @@ void shader_use(int programID) {
 void shader_destroy(int programID) {
     glDeleteProgram(programID);
 }
+
+// UNIFORMs
+// sets boolean uniform
+void setBoolean(const int programID, const char* name, bool value) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform1i(location, value);
+}
+// sets float uniform
+void setFloat(const int programID, const char* name, float value) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform1f(location, value);
+}
+// sets integer uniform
+void setInteger(const int programID, const char* name, int value) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform1i(location, value);
+}
+// sets float vector 2 uniform
+void setFloat2(const int programID, const char* name, float value[2]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform2f(location, value[0], value[1]);
+}
+// sets int vector 2 uniform
+void setInteger2(const int programID, const char* name, int value[2]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform2i(location, value[0], value[1]);
+}
+// sets float vector 3 uniform
+void setFloat3(const int programID, const char* name, float value[3]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform3f(location, value[0], value[1], value[2]);
+}
+// sets int vector 3 uniform
+void setInteger3(const int programID, const char* name, int value[3]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform3i(location, value[0], value[1], value[2]);
+}
+// sets float vector 4 uniform
+void setFloat4(const int programID, const char* name, float value[4]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform4f(location, value[0], value[1], value[2], value[3]);
+}
+// sets int vector 4 uniform
+void setInteger4(const int programID, const char* name, int value[4]) {
+    int location = glGetUniformLocation(programID, name);
+    glUniform4i(location, value[0], value[1], value[2], value[3]);
+}
