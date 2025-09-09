@@ -10,6 +10,7 @@ Vertices can then have properties like color, normal and such.
 typedef struct {
     int vao;
     int vbosCount;
+    int lastOffset; // used for automatically handling offsets when adding VBOs, thus vertex attribute arrays locations for shader
     int* vbos;
     int ebo;
     int drawMode;
