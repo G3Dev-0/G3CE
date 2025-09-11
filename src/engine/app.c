@@ -33,14 +33,6 @@ void app_loop(void (*main_init)(), void (*main_tick)(), void (*main_draw)(), voi
         
         main_draw();
 
-        // use the shader program before binding the shader variables
-        //glUseProgram(program);
-        //glBindVertexArray(triangleVAO);
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
-        
-        // glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind for good practice
-
         // finalize frame
         glfwSwapBuffers(window);
         glfwPollEvents();    

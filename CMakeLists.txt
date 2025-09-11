@@ -35,6 +35,7 @@ add_executable(${PROJECT_NAME}
     src/engine/core/input.c
     src/engine/core/window.c
     src/engine/gfx/mesh.c
+    src/engine/gfx/renderer.c
     src/engine/gfx/shader.c
     src/engine/utils/console.c
     src/engine/utils/file.c

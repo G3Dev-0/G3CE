@@ -1,129 +1,115 @@
 /*
 MESH:
-A mesh is a collection of vertices. It also has indices that specify how to connect said vertices.
-Vertices can then have properties like color, normal and such.
+Handles mesh creation and destruction
 */
 
 #include <stdlib.h>
-
 #include <glad/glad.h>
 
-#include "engine/gfx/shader.h"
 #include "engine/utils/console.h"
 
 #include "engine/gfx/mesh.h"
 
-// creates the mesh and returns its VAO
-// vertices is the vertices position array
-// verticesLength is the sizeof() of the vertices position array
-// indices is the indices array, specifing the order in which to render the verices
-// indicesLength is the sizeof() of the indices array
-// drawMode is the OpenGL mode to draw the verices (GL_TRIANGLES, GL_QUADS, ...)
-// YOU MUST FREE THE VAO BY CALLING mesh_destroy()
-Mesh* mesh_create(float* vertices, unsigned int verticesLength, unsigned int* indices, unsigned int indicesLength, int drawMode) {
-    // generate VAO
+/*
+Creates a new mesh object and returns a pointer to it.
+You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore
+in order to free the allocated memory
+All the vertex data must be put into the same vertices array
+Arguments:
+    - vertices (float*): pointer to float array containing ALL the vertex data (positions, colors, UVs, normals, etc...)
+    - verticesSize (int): sizeof(vertices)
+    - indices (int*): pointer to integer array containing the indices that specify the order in which the vertices must be rendered
+    - indicesSize (int): sizeof(indices)
+    - vertexLength (int): the number of floats that defines a vertex (e.g.: 3 for 3D position + 4 for RGBA color = 7)
+    - drawMode (int): the drawing mode OpenGL has to use (GL_TRIANGLES, GL_QUADS, etc...)
+Returns:
+    The pointer to the mesh struct that has been created. It points to dynamically allocated memory,
+    so you MUST call mesh_destroy(Mesh*) that handles the free() procedure
+*/
+Mesh* mesh_create(float* vertices, int verticesSize, unsigned int* indices, int indicesSize, int vertexLength, int drawMode) {
+    Mesh* mesh = (Mesh*) malloc(sizeof(Mesh));
+    if (mesh == NULL) {
+        console_error("Failed to allocate memory for mesh creation.");
+        return NULL;
+    }
+
+    // set some usefull mesh variable values
+    mesh->lastOffset = 0;
+    mesh->drawMode = drawMode;
+    mesh->indicesLength = indicesSize / sizeof(int);
+    mesh->stride = vertexLength * sizeof(float);
+
+    // generate VAO and assign it to the mesh
     int vao;
     glGenVertexArrays(1, &vao);
-
-    Mesh* mesh = (Mesh*) malloc(sizeof(Mesh));
     mesh->vao = vao;
-    mesh->vbosCount = 0;
-    mesh->lastOffset = 0;
-    // allocate some memory to the vbos array
-    mesh->vbos = (int*) malloc(0);
 
-    // bind the positions VBO and the EBO to the VAO
-
-    // positions VBO // this binds and unbinds the VAO on its own, as it can also be called elsewhere
-    mesh_addVertexAttributeFloat(mesh, 0, 3, vertices, verticesLength);
-
-    // bind VAO
+    // bind the mesh VAO
     glBindVertexArray(vao);
 
-    // EBO
-    // generate EBO
+    // generate VBO and assign it to the mesh
+    int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
+
+    // generate EBO and assign it to the mesh
     int ebo;
     glGenBuffers(1, &ebo);
-    // bind the EBO to the VAO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesLength, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
 
-    mesh->ebo = ebo;
-    
-    // unbind the VAO BEFORE UNBINDING THE VBOs AND THE EBO,
-    // OTHERWISE IT WILL KEEP IN MEMORY THAT IT HAS TO UNBIND
-    // VBOs and EBO BEFORE CALLING glDrawElements();
+    // unbind the mesh VAO
     glBindVertexArray(0);
 
-    // unbind the VBOs
+    // unbind the VBO and the EBO ONLY AFTER UNBINDING THE VAO,
+    // otherwise the VBO and EBO unbinding operation gets registered into the VAO
+    // and nothing renders
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // unbind the EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    mesh->vbo = vbo;
+    mesh->ebo = ebo;
 
     return mesh;
 }
 
-// creates a VBO and associates it to a vertex attribute of type int buffer to the specified mesh
-// attribLocation is the location of the attribute in the shader
-// size is the number of components for each vertex attribute (e.g.: 3 for 3D position, 4 for RGBA colors)
-// dataLength is the sizeof() of the data array
-void mesh_addVertexAttributeFloat(Mesh* mesh, int attribLocation, int size, float* data, unsigned int dataLength) {
-    // bind VAO
-    glBindVertexArray(mesh->vao);
-    
-    // generate VBO
-    int vbo;
-    glGenBuffers(1, &vbo);
-
-    // must bind the VBO now, because glVertexAttribPointer() associates the attribute location to the currently bound VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, dataLength, data, GL_STATIC_DRAW);
-
-    // save the current stride (used later for automatically handling VBO offsets)
-    unsigned int stride = size * sizeof(float);
-    
-    // associate the attribute location (in the shader)
-    glVertexAttribPointer(attribLocation, size, GL_FLOAT, GL_FALSE, stride, (void*) (mesh->lastOffset));
-    glEnableVertexAttribArray(attribLocation);
-
-    // update the nextOffset;
-    mesh->lastOffset += stride;
-
-    // add the vbo to the mesh vbos and also update the vbosCount
-    mesh->vbosCount++;
-    mesh->vbos = (int*) realloc(mesh->vbos, (mesh->vbosCount) * sizeof(int));
-    mesh->vbos[(mesh->vbosCount) - 1] = vbo;
-
-    // unbind VAO
-    glBindVertexArray(0);
-}
-
-// destroies the given mesh
-void mesh_destroy(Mesh* mesh) {
-    // delete the VBOs
-    for (int i = 0; i < mesh->vbosCount; i++) {
-        glDeleteBuffers(GL_ARRAY_BUFFER, &(mesh->vbos[i]));
-    }
-
-    // delete the EBO
-    glDeleteBuffers(GL_ELEMENT_ARRAY_BUFFER, &(mesh->ebo));
-
-    // delete the VAO
-    glDeleteVertexArrays(1, &(mesh->vao)); // &mesh->vbos[i] is also correct, as the arrow operator has priority over the address-of operator, but it's easier to read
-
-    // finally free mesh
-    free(mesh);
-}
-
-// draws the given mesh using the given shader (programID)
-void mesh_draw(Mesh* mesh, int shader) {
-    shader_use(shader);
-    // now when we want to render that particular VAO we just do
+/*
+Registers a vertex attribute of type float for the given mesh.
+Arguments:
+    - mesh (Mesh*): the pointer to the mesh to associate the new vertex float attribute
+    - attributeLocation (int): the attribute location in the shader
+    - size (int): number of floats that composes a vertex attribute (e.g.: 2 for UV coordinates, 3 for 3D positions, 4 for RGBA colors)
+*/
+void mesh_registerVertexAttribute(Mesh* mesh, int attributeLocation, int size) {
     // bind the VAO
     glBindVertexArray(mesh->vao);
-    // args: mode (how to interpret the vericies data), initial offset, vertex count
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
-    // unbind the VAO for good practive
+    // bind the VBO (otherwise the attribute binding won't work)
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+
+    // calculate the stride for this vertex attribute
+    int attributeSize = size * sizeof(float);
+    // register the new vertex attribute
+    glVertexAttribPointer(attributeLocation, size, GL_FLOAT, GL_FALSE, mesh->stride, (void*) (mesh->lastOffset));
+    glEnableVertexAttribArray(attributeLocation);
+
+    // update the last offset to handle offsets automatically
+    mesh->lastOffset += attributeSize;
+
     glBindVertexArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+/*
+Destroys the given mesh object.
+Arguments:
+    - mesh (Mesh*): the mesh to destroy
+*/
+void mesh_destroy(Mesh* mesh) {
+    glDeleteBuffers(GL_ARRAY_BUFFER, &(mesh->vbo));
+    glDeleteBuffers(GL_ELEMENT_ARRAY_BUFFER, &(mesh->ebo));
+    glDeleteVertexArrays(1, &(mesh->vao));
+
+    free(mesh);
 }

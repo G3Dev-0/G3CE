@@ -62,11 +62,6 @@ int shader_create(char* vertexPath, char* fragmentPath) {
     return programID;
 }
 
-// uses the given shader
-void shader_use(int programID) {
-    glUseProgram(programID);
-}
-
 // destroys the given shader
 void shader_destroy(int programID) {
     glDeleteProgram(programID);

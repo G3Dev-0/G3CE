@@ -13,7 +13,7 @@ int main() {
 
     // app setup
     renderer_setGLClearColor(1, 1, 1, 1);
-
+    
     // main app loop
     app_loop(main_init, main_tick, main_draw, main_exit);
     // close the app when the loop is broken (you can break out of the loop ONLY by calling app_requestClose())
@@ -23,33 +23,34 @@ int main() {
 }
 
 int vao;
-int shader;
+int default_shader, color_shader;
 Mesh* mesh;
 
 // init function (called before entering the app main loop)
 void main_init() {
-    // create a shader
-    shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
+    // create shaders
+    default_shader = shader_create("./assets/shaders/default_vertex.glsl", "./assets/shaders/default_fragment.glsl");
+    color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
 
-    float positions[9] = {
-        0.0, 0.5, 0.0,
-        -0.5, 0.0, 0.0,
-        0.5, 0.0, 0.0
+    float vertices[] = {
+        // position         // color
+        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 0.0,
+        0.5, -0.5, 0.0,     0.0, 1.0, 0.0, 0.0,
+        0.5, 0.5, 0.0,      0.0, 0.0, 1.0, 0.0,
+        -0.5, 0.5, 0.0,     1.0, 1.0, 1.0, 0.0
     };
 
-    float colors[12] = {
-        1.0, 0.5, 0.0, 0.0,
-        0.5, 0.0, 1.0, 0.0,
-        0.5, 1.0, 0.5, 0.0
-    };
-
-    unsigned int indices[3] = {
-        0, 1, 2
+    unsigned int indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     // create a mesh
-    mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
-    mesh_addVertexAttributeFloat(mesh, 1, 4, colors, sizeof(colors));
+    // mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
+    // mesh_addVertexAttributeFloat(mesh, 1, 4, colors, sizeof(colors));
+    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4, GL_TRIANGLES);
+    mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
+    mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -67,12 +68,14 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    mesh_draw(mesh, shader); // todo: maybe move draw_mesh in renderer
     //TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
+    renderer_useShader(color_shader);
+    renderer_renderMesh(mesh);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
     mesh_destroy(mesh);
-    shader_destroy(shader);
+    shader_destroy(default_shader);
+    shader_destroy(color_shader);
 }

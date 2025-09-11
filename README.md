@@ -4,13 +4,20 @@
 ## Table of Contents
 + [**Using G3CE**](#using-g3ce)
 + [**Engine modules**](#engine-modules)
+
+    **Core**
     - [**App**](#app)
     - [**Window**](#window)
     - [**Input**](#input)
-    - [**Console**](#console)
-    - [**File**](#file)
+
+    **Graphics**
+    - [**Renderer**](#renderer)
     - [**Shader**](#shader)
     - [**Mesh**](#mesh)
+    
+    **Utils**
+    - [**Console**](#console)
+    - [**File**](#file)
 + [**Using the engine**](#using-the-engine)
 + [**Used technologies**](#used-technologies)
 + [**Version history**](#version-history)
@@ -68,20 +75,19 @@ This module contains all the useful handlers for keyboard and mouse input. Namel
 + `double input_getMouseY()`: returns the mouse y position in the window (0 to window_height - 1 from TOP to BOTTOM)
 + `int input_getMouseScroll()`: returns the mouse scroll (0 when not scrolling, NEGATIVE when scrolling DOWNWARDS, POSITIVE when scrolling UPWARDS)
 
-#### Console [#](#table-of-contents)
-This module has some cooler output functions that allow you to better organize your outputs.
-+ `void console_output(const char* format, ...)`: generic output (just like a printf())
-+ `void console_info(const char* format, ...)`: info log level (uses the "[INFO]: " prefix)
-+ `void console_log(const char* format, ...)`: log log level (uses the "[LOG]: " prefix and outputs in green color)
-+ `void console_warning(const char* format, ...)`: warning log level (uses the "[WARNING]: " prefix and outputs in orange color)
-+ `void console_error(const char* format, ...)`: error log level (uses the "[ERROR]: " prefix and outputs in red color)
-+ `void console_debug(const char* format, ...)`: debug log level (uses the "[DEBUG]: " prefix and outputs in blue color)
+#### Renderer [#](#table-of-contents)
+The renderer module can be used to render meshed, enable shaders and have rapid access to some OpenGL functions.
 
-#### File [#](#table-of-contents)
-The file module has some file handling utility functions, namely:
-+ `bool file_write(char* path, char* content)`: writes content to a file at path ("./file" means it is in "g3ge")
-+ `char* file_read(char* path)`: returns the content of a file at path ("./file" means it is in "g3ge"), YOU MUST FREE THE RETURN VALUE by calling stdlib.free()!
-+ `int file_remove(char* path)`: removes a file at path ("./file" means it is in "g3ge")
++ `void renderer_setGLClearColor(float r, float g, float b, float a)`: sets the clear color with RGBA values (default color is white (1, 1, 1, 1))
++ `void renderer_setGLPolygonMode(int mode)`: sets GL polygon mode (either to GL_POINT, GL_LINE or GL_FILL (default one))
++ `void renderer_setGLCullMode(int mode)`: sets GL cull mode (either to GL_FRONT, GL_BACK (default), GL_FRONT_AND_BACK or -1 (disable face culling))
+
++ `void renderer_useShader(int shader)`: uses a shader.\
+**Arguments:**
+    - shader (int): the shader program id
++ `void renderer_renderMesh(Mesh* mesh)`: renders a given mesh.\
+**Arguments:**
+    - mesh (Mesh): the mesh pointer
 
 #### Shader [#](#table-of-contents)
 Shaders are the GPU code that allows you to render anything on the screen. They are written in GLSL (GL Shading Language). With this module you can easily load them in code and use them when rendering.
@@ -103,37 +109,62 @@ Shaders are the GPU code that allows you to render anything on the screen. They 
 #### Mesh [#](#table-of-contents)
 With the mesh module, you can easily create simple meshes starting from vertices, indices and a draw mode.
 After creating a mesh you can easily draw the mesh using a certain shader.
-+ `Mesh* mesh_create(float* vertices, unsigned int verticesLength, unsigned int* indices, unsigned int indicesLength, int drawMode)`: creates the mesh and returns it\
-Parameters:
-    + **vertices:** the vertices position array
-    + **verticesLength:** the sizeof() of the vertices position array
-    + **indices:** the indices array, specifing the order in which to render the verices
-    + **indicesLength:** the sizeof() of the indices array
-    + **drawMode:** the OpenGL mode to draw the verices (GL_TRIANGLES, GL_QUADS, ...)
++ `Mesh* mesh_create(float* vertices, int verticesSize, unsigned int* indices, int indicesSize, int vertexLength, int drawMode)`: creates a new mesh object and returns a pointer to it.
+You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore
+in order to free the allocated memory
+All the vertex data must be put into the same vertices array.\
+**Arguments:**
+    - vertices (float*): pointer to float array containing ALL the vertex data (positions, colors, UVs, normals, etc...)
+    - verticesSize (int): sizeof(vertices)
+    - indices (unsigned int*): pointer to integer array containing the indices that specify the order in which the vertices must be rendered
+    - indicesSize (int): sizeof(indices)
+    - vertexLength (int): the number of floats that defines a vertex (e.g.: 3 for 3D position + 4 for RGBA color = 7)
+    - drawMode (int): the drawing mode OpenGL has to use (GL_TRIANGLES, GL_QUADS, etc...)
 
-    YOU MUST FREE THE VAO BY CALLING mesh_destroy()
-+ `void mesh_addVertexAttributeFloat(Mesh* mesh, int attribLocation, int size, float* data, unsigned int dataLength)`: creates a VBO and associates it to a vertex attribute of type int buffer to the specified mesh\
-Parameters:
-    + **attribLocatio:n** the location of the attribute in the shader
-    + **size:** the number of components for each vertex attribute (e.g.: 3 for 3D position, 4 for RGBA colors)
-    + **dataLength:** the sizeof() of the data array
-+ `void mesh_destroy(Mesh* mesh)`: destroies the given mesh (VAO)
-+ `void mesh_draw(Mesh* mesh, int shader)`: draws the given mesh using the given shader (programID)
+    **Returns:**\
+    The pointer to the mesh struct that has been created. It points to dynamically allocated memory, so you MUST call mesh_destroy(Mesh*) that handles the free() procedure
++ `void mesh_registerVertexAttribute(Mesh* mesh, int attributeLocation, int size)`: registers a vertex attribute of type float for the given mesh.
+**Arguments:**
+    - mesh (Mesh*): the pointer to the mesh to associate the new vertex float attribute
+    - attributeLocation (int): the attribute location in the shader
+    - size (int): number of floats that composes a vertex attribute (e.g.: 2 for UV coordinates, 3 for 3D positions, 4 for RGBA colors)
++ `void mesh_destroy(Mesh* mesh)`: destroys the given mesh object.\
+**Arguments:**
+    - mesh (Mesh*): the mesh to destroy
 
 **Remember: a mesh must always be destroyed when not used anymore!**
+
+#### Console [#](#table-of-contents)
+This module has some cooler output functions that allow you to better organize your outputs.
++ `void console_output(const char* format, ...)`: generic output (just like a printf())
++ `void console_info(const char* format, ...)`: info log level (uses the "[INFO]: " prefix)
++ `void console_log(const char* format, ...)`: log log level (uses the "[LOG]: " prefix and outputs in green color)
++ `void console_warning(const char* format, ...)`: warning log level (uses the "[WARNING]: " prefix and outputs in orange color)
++ `void console_error(const char* format, ...)`: error log level (uses the "[ERROR]: " prefix and outputs in red color)
++ `void console_debug(const char* format, ...)`: debug log level (uses the "[DEBUG]: " prefix and outputs in blue color)
+
+#### File [#](#table-of-contents)
+The file module has some file handling utility functions, namely:
++ `bool file_write(char* path, char* content)`: writes content to a file at path ("./file" means it is in "g3ge")
++ `char* file_read(char* path)`: returns the content of a file at path ("./file" means it is in "g3ge"), YOU MUST FREE THE RETURN VALUE by calling stdlib.free()!
++ `int file_remove(char* path)`: removes a file at path ("./file" means it is in "g3ge")
 
 ### Using the engine [#](#table-of-contents)
 In order to use the engine you have to create a `main.c` file where you can run all your logic and rendering code.\
 After doing so, you'll be able to start the program by running `cmd/run.sh`. This will build the project and run it using `int main()` function in `main.c` as the program entry point.\
 You can set up a simple program as follows:
-```c
+```C
+/*
+This simple program renders a colorful quad at the center of the screen.
+*/
 #include "engine/app.h"
 #include "engine/core/window.h"
 #include "engine/core/input.h"
 #include "engine/gfx/mesh.h"
+#include "engine/gfx/renderer.h"
 #include "engine/gfx/shader.h"
 
-// you can also put those four in a "main.h" file for good practice
+// you can also declare those four functions in a "main.h" file for good practice
 void main_init();
 void main_tick();
 void main_draw();
@@ -151,27 +182,30 @@ int main() {
 }
 
 int vao;
-int shader;
+int color_shader;
 Mesh* mesh;
 
 // init function (called before entering the app main loop)
 void main_init() {
-    float positions[9] = {
-        0.0, 0.5, 0.0,
-        -0.5, 0.0, 0.0,
-        0.5, 0.0, 0.0
+        color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
+
+    float vertices[] = {
+        // position         // color
+        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 0.0,
+        0.5, -0.5, 0.0,     0.0, 1.0, 0.0, 0.0,
+        0.5, 0.5, 0.0,      0.0, 0.0, 1.0, 0.0,
+        -0.5, 0.5, 0.0,     1.0, 1.0, 1.0, 0.0
     };
 
-    unsigned int indices[3] = {
-        0, 1, 2
+    unsigned int indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     // create a mesh
-    mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
-    // mesh_addVertexAttributeFloat(mesh, 1, 3, colors, sizeof(colors));
-
-    // create a shader
-    shader = shader_create("./assets/shaders/default_vertex.glsl", "./assets/shaders/default_fragment.glsl");
+    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4, GL_TRIANGLES);
+    mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
+    mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -189,13 +223,43 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    mesh_draw(mesh, shader);
+    renderer_useShader(color_shader);
+    renderer_renderMesh(mesh);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
     mesh_destroy(mesh);
-    shader_destroy(shader);
+    shader_destroy(color_shader);
+}
+```
+
+Here is also the shader code:\
+**Vertex shader:**
+```GLSL
+#version 330 core
+
+layout (location = 0) in vec3 iPos;
+layout (location = 1) in vec4 iCol;
+
+out vec4 oCol;
+
+void main() {
+    oCol = iCol;
+    gl_Position = vec4(iPos.xyz, 1.0);
+}
+```
+
+**Fragment shader:**
+```GLSL
+#version 330 core
+
+in vec4 oCol;
+
+out vec4 fragColor;
+
+void main() {
+    fragColor = oCol.rgba;
 }
 ```
 
@@ -221,11 +285,16 @@ Home page: https://glew.sourceforge.net/
 Window context and input handler\
 Home page: https://www.glfw.org/
 
+- **STB Image**\
+Image loader\
+Home page: https://github.com/nothings/stb
+
 ### Version history [#](#table-of-contents)
++ **v1.0 b11092025-0:** improved mesh implementation, added a renderer module to easily deals with some OpenGL functions
 + **v1.0 b08092025-0:** implemented shader uniform handling, fixed offset in vertex attribute location registration
 + **v1.0 b06092025-0:** implemented shader and mesh utilities
 + **v1.0 b01092025-0:** implemented functions for app handling, window and input
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b08092025-0
+v1.0 b11092025-0
