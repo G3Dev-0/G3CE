@@ -14,6 +14,7 @@
     - [**Renderer**](#renderer)
     - [**Shader**](#shader)
     - [**Mesh**](#mesh)
+    - [**Texture**](#texture)
     
     **Utils**
     - [**Console**](#console)
@@ -79,30 +80,32 @@ This module contains all the useful handlers for keyboard and mouse input. Namel
 The renderer module can be used to render meshed, enable shaders and have rapid access to some OpenGL functions.
 
 + `void renderer_setGLClearColor(float r, float g, float b, float a)`: sets the clear color with RGBA values (default color is white (1, 1, 1, 1))
-+ `void renderer_setGLPolygonMode(int mode)`: sets GL polygon mode (either to GL_POINT, GL_LINE or GL_FILL (default one))
-+ `void renderer_setGLCullMode(int mode)`: sets GL cull mode (either to GL_FRONT, GL_BACK (default), GL_FRONT_AND_BACK or -1 (disable face culling))
++ `void renderer_setGLPolygonMode(unsigned int mode)`: sets GL polygon mode (either to GL_POINT, GL_LINE or GL_FILL (default one))
++ `void renderer_setGLCullMode(unsigned int mode)`: sets GL cull mode (either to GL_FRONT, GL_BACK (default), GL_FRONT_AND_BACK or -1 (disable face culling))
 
-+ `void renderer_useShader(int shader)`: uses a shader.\
-**Arguments:**
-    - shader (int): the shader program id
++ `void renderer_useShader(unsigned int shader)`: uses a shader.\
+**Parameters:**
+    - shader (*unsigned int*): the shader program id
++ `void renderer_bindTexture(unsigned int texture, unsigned int unit)`: binds a texture.
+**Parameters:**
+    - texture (*unsigend int*): the shader program id
 + `void renderer_renderMesh(Mesh* mesh)`: renders a given mesh.\
-**Arguments:**
-    - mesh (Mesh): the mesh pointer
+**Parameters:**
+    - mesh (*Mesh**): the mesh pointer
 
 #### Shader [#](#table-of-contents)
 Shaders are the GPU code that allows you to render anything on the screen. They are written in GLSL (GL Shading Language). With this module you can easily load them in code and use them when rendering.
-+ `int shader_create(char* vertexPath, char* fragmentPath)`: creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ge") and returns its program ID
-+ `void shader_use(int programID)`: activates the given shader
-+ `void shader_destroy(int programID)`: destroys the given shader
-+ `void setBoolean(const int programID, const char* name, bool value)`: sets boolean uniform
-+ `void setFloat(const int programID, const char* name, float value)`: sets float uniform
-+ `void setInteger(const int programID, const char* name, int value)`: sets integer uniform
-+ `void setFloat2(const int programID, const char* name, float value[2])`: sets float vector 2 uniform
-+ `void setInteger2(const int programID, const char* name, int value[2])`: sets int vector 2 uniform
-+ `void setFloat3(const int programID, const char* name, float value[3])`: sets float vector 3 uniform
-+ `void setInteger3(const int programID, const char* name, int value[3])`: sets int vector 3 uniform
-+ `void setFloat4(const int programID, const char* name, float value[4])`: sets float vector 4 uniform
-+ `void setInteger4(const int programID, const char* name, int value[4])`: sets int vector 4 uniform
++ `unsigned int shader_create(char* vertexPath, char* fragmentPath)`: creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ce") and returns its program ID
++ `void shader_destroy(unsigned int programID)`: destroys the given shader
++ `void setBoolean(const unsigned int programID, const char* name, bool value)`: sets boolean uniform
++ `void setFloat(const unsigned int programID, const char* name, float value)`: sets float uniform
++ `void setInteger(const unsigned int programID, const char* name, int value)`: sets integer uniform
++ `void setFloat2(const unsigned int programID, const char* name, float value[2])`: sets float vector 2 uniform
++ `void setInteger2(const unsigned int programID, const char* name, int value[2])`: sets int vector 2 uniform
++ `void setFloat3(const unsigned int programID, const char* name, float value[3])`: sets float vector 3 uniform
++ `void setInteger3(const unsigned int programID, const char* name, int value[3])`: sets int vector 3 uniform
++ `void setFloat4(const unsigned int programID, const char* name, float value[4])`: sets float vector 4 uniform
++ `void setInteger4(const unsigned int programID, const char* name, int value[4])`: sets int vector 4 uniform
 
 **Remember: a shader must always be destroyed when not used anymore!**
 
@@ -113,24 +116,50 @@ After creating a mesh you can easily draw the mesh using a certain shader.
 You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore
 in order to free the allocated memory
 All the vertex data must be put into the same vertices array.\
-**Arguments:**
+**Parameters:**
     - vertices (float*): pointer to float array containing ALL the vertex data (positions, colors, UVs, normals, etc...)
-    - verticesSize (int): sizeof(vertices)
+    - verticesSize (unsigned int): sizeof(vertices)
     - indices (unsigned int*): pointer to integer array containing the indices that specify the order in which the vertices must be rendered
-    - indicesSize (int): sizeof(indices)
-    - vertexLength (int): the number of floats that defines a vertex (e.g.: 3 for 3D position + 4 for RGBA color = 7)
-    - drawMode (int): the drawing mode OpenGL has to use (GL_TRIANGLES, GL_QUADS, etc...)
+    - indicesSize (unsigned int): sizeof(indices)
+    - vertexLength (unsigned int): the number of floats that defines a vertex (e.g.: 3 for 3D position + 4 for RGBA color = 7)
+    - drawMode (unsigned int): the drawing mode OpenGL has to use (GL_TRIANGLES, GL_QUADS, etc...)
 
     **Returns:**\
     The pointer to the mesh struct that has been created. It points to dynamically allocated memory, so you MUST call mesh_destroy(Mesh*) that handles the free() procedure
-+ `void mesh_registerVertexAttribute(Mesh* mesh, int attributeLocation, int size)`: registers a vertex attribute of type float for the given mesh.
-**Arguments:**
-    - mesh (Mesh*): the pointer to the mesh to associate the new vertex float attribute
-    - attributeLocation (int): the attribute location in the shader
-    - size (int): number of floats that composes a vertex attribute (e.g.: 2 for UV coordinates, 3 for 3D positions, 4 for RGBA colors)
 + `void mesh_destroy(Mesh* mesh)`: destroys the given mesh object.\
-**Arguments:**
+**Parameters:**
     - mesh (Mesh*): the mesh to destroy
++ `void mesh_registerVertexAttribute(Mesh* mesh, int attributeLocation, int size)`: registers a vertex attribute of type float for the given mesh.
+**Parameters:**
+    - mesh (*Mesh**): the pointer to the mesh to associate the new vertex float attribute
+    - attributeLocation (*unsigned int*): the attribute location in the shader
+    - size (*unsigned int*): number of floats that composes a vertex attribute (e.g.: 2 for UV coordinates, 3 for 3D positions, 4 for RGBA colors)
++ `void mesh_assignTexture(Mesh* mesh, unsigned int texture, unsigned int unit)`: assings a texture to a given mesh via a texture id (this means that the texture will be automatically bound when rendering the mesh via renderer_renderMesh()).
+**Parameters:**
+    - texture (*unsigned int*): the texture id
+    - unit (*unsigned int*): the texture unit to attach the texture to
+
+#### Texture [#](#table-of-contents)
+The texture module can be used to rapidly deal with 2D textures.
++ `unsigned int texture_create(char* path, bool hasTransparency)`: creates a texture loading an image from the given path ("./file" means it is in "g3ce").\
+REMEMBER TO DESTROY IT BY CALLING texture_destroy()!\
+If you assign the texture to a mesh via mesh_assignTexture() destroying the mesh will also destroy the texture.
++ `void texture_destroy(unsigned int texture)`: destroys a given texture
++ `void texture_setFilter(unsigned int texture, unsigned int filter, unsigned int mode)`: sets the filter for a given texture.
+**Parameters:**
+    - texture (*unsigned int*): the texture id
+    - filter (*unsigned int*): the filter to set the mode for (either GL_TEXTURE_MIN_FILTER for minifying textures or GL_TEXTURE_MAG_FILTER for magnifying textures)
+    - mode (*unsigned int*): the filter mode to set (either GL_NEAREST for crispy/pixelated textures (it samples the nearest pixel color) or GL_LINEAR for a smoother texture (it interpolates the closer pixel colors))
++ `void texture_setWrapping(unsigned int texture, unsigned int wrap, unsigned int mode)`: sets the wrapping mode for a given texture.
+**Parameters:**
+    - texture (*unsigned int*): the texture id
+    - wrap (*unsigned int*): the wrap to set the mode for (either GL_TEXTURE_WRAP_S for horizontal wrapping or GL_TEXTURE_WRAP_T for vertical wrapping)
+    - mode (*unsigned int*): the wrap mode to set. It can be one of the following:
+        + **GL_REPEAT** (the default one) repeats the texture indefinitively
+        + **GL_MIRRORED_REPEAT** repeats the texture indefinitively but also mirrors it with each repeat
+        + **GL_CLAMP_TO_EDGE** clamps UVs between 0 and 1
+        + **GL_CLAMP_TO_BORDER** UVs outside of the range [0, 1] are given a user-specified color
++ `void texture_setBorderColor(unsigned int texture, float r, float g, float b, float a)`: sets the border color for when OpenGL wrapping is set to **GL_CLAMP_TO_BORDER** mode
 
 **Remember: a mesh must always be destroyed when not used anymore!**
 
@@ -145,9 +174,9 @@ This module has some cooler output functions that allow you to better organize y
 
 #### File [#](#table-of-contents)
 The file module has some file handling utility functions, namely:
-+ `bool file_write(char* path, char* content)`: writes content to a file at path ("./file" means it is in "g3ge")
-+ `char* file_read(char* path)`: returns the content of a file at path ("./file" means it is in "g3ge"), YOU MUST FREE THE RETURN VALUE by calling stdlib.free()!
-+ `int file_remove(char* path)`: removes a file at path ("./file" means it is in "g3ge")
++ `bool file_write(char* path, char* content)`: writes content to a file at path ("./file" means it is in "g3ce")
++ `char* file_read(char* path)`: returns the content of a file at path ("./file" means it is in "g3ce"), YOU MUST FREE THE RETURN VALUE by calling stdlib.free()!
++ `int file_remove(char* path)`: removes a file at path ("./file" means it is in "g3ce")
 
 ### Using the engine [#](#table-of-contents)
 In order to use the engine you have to create a `main.c` file where you can run all your logic and rendering code.\
@@ -181,13 +210,13 @@ int main() {
     return 0;
 }
 
-int vao;
-int color_shader;
+unsigned int vao;
+unsigned int color_shader;
 Mesh* mesh;
 
 // init function (called before entering the app main loop)
 void main_init() {
-        color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
+    color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
 
     float vertices[] = {
         // position         // color
@@ -259,7 +288,7 @@ in vec4 oCol;
 out vec4 fragColor;
 
 void main() {
-    fragColor = oCol.rgba;
+    fragColor = oCol;
 }
 ```
 
@@ -290,6 +319,7 @@ Image loader\
 Home page: https://github.com/nothings/stb
 
 ### Version history [#](#table-of-contents)
++ **v1.0 b12092025-0:** added 2D texture support
 + **v1.0 b11092025-0:** improved mesh implementation, added a renderer module to easily deals with some OpenGL functions
 + **v1.0 b08092025-0:** implemented shader uniform handling, fixed offset in vertex attribute location registration
 + **v1.0 b06092025-0:** implemented shader and mesh utilities
@@ -297,4 +327,4 @@ Home page: https://github.com/nothings/stb
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b11092025-0
+v1.0 b12092025-0

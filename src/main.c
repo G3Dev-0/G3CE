@@ -4,6 +4,7 @@
 #include "engine/gfx/mesh.h"
 #include "engine/gfx/renderer.h"
 #include "engine/gfx/shader.h"
+#include "engine/gfx/texture.h"
 
 #include "main.h"
 
@@ -22,22 +23,23 @@ int main() {
     return 0;
 }
 
-int vao;
-int default_shader, color_shader;
+unsigned int vao;
+unsigned int shader;
+unsigned int texture;
 Mesh* mesh;
 
 // init function (called before entering the app main loop)
 void main_init() {
     // create shaders
-    default_shader = shader_create("./assets/shaders/default_vertex.glsl", "./assets/shaders/default_fragment.glsl");
-    color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
+    shader = shader_create("./assets/shaders/texture_vertex.glsl", "./assets/shaders/texture_fragment.glsl");
+    shader_setInteger(shader, "texture", 0);    
 
     float vertices[] = {
-        // position         // color
-        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 0.0,
-        0.5, -0.5, 0.0,     0.0, 1.0, 0.0, 0.0,
-        0.5, 0.5, 0.0,      0.0, 0.0, 1.0, 0.0,
-        -0.5, 0.5, 0.0,     1.0, 1.0, 1.0, 0.0
+        // position         // color                UVs
+        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 0.0,     0.0, 0.0,
+         0.5, -0.5, 0.0,    0.0, 1.0, 0.0, 0.0,     1.0, 0.0,
+         0.5,  0.5, 0.0,    0.0, 0.0, 1.0, 0.0,     1.0, 1.0,
+        -0.5,  0.5, 0.0,    1.0, 1.0, 1.0, 0.0,     0.0, 1.0
     };
 
     unsigned int indices[] = {
@@ -45,12 +47,16 @@ void main_init() {
         0, 2, 3
     };
 
+    texture = texture_create("./assets/textures/wall.jpg", false);
+
     // create a mesh
     // mesh = mesh_create(positions, sizeof(positions), indices, sizeof(indices), GL_TRIANGLES);
     // mesh_addVertexAttributeFloat(mesh, 1, 4, colors, sizeof(colors));
-    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4, GL_TRIANGLES);
+    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
     mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
     mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
+    mesh_registerVertexAttribute(mesh, 2, 2); // uv attribute
+    // mesh_assignTexture(mesh, texture);
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -69,13 +75,14 @@ void main_tick() {
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
     //TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
-    renderer_useShader(color_shader);
+    renderer_useShader(shader);
+    renderer_bindTexture(texture, 0);
     renderer_renderMesh(mesh);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
     mesh_destroy(mesh);
-    shader_destroy(default_shader);
-    shader_destroy(color_shader);
+    texture_destroy(texture);
+    shader_destroy(shader);
 }
