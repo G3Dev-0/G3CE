@@ -162,9 +162,9 @@ You can access the transform `position`, `rotation` and `scale` via the arrow op
 ```C
 Transform* transform = transform_create();
 
-transform->position;
-transform->rotation;
-transform->scale;
+transform->position; // this is a vec3 from linal.h
+transform->rotation; // this is a vec3 from linal.h
+transform->scale; // this is a vec3 from linal.h
 
 transform_destroy(transform);
 ```
@@ -186,9 +186,9 @@ You can access the camera `position`, `pitch` and `yaw` via the arrow operator:
 ```C
 Camera* camera = camera_create();
 
-camera->position;
-camera->pitch;
-camera->yaw;
+camera->position; // this is a vec3 from linal.h
+camera->pitch; // this is a float
+camera->yaw; // this is a float
 
 camera_destroy(camera);
 ```
