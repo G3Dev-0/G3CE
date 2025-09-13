@@ -9,6 +9,9 @@ there will be the transform module, which will be part of the game_object module
 (extended object lifetime makes heap allocation a better approach).
 */
 
+#ifndef LINAL_H
+#define LINAL_H
+
 // float Vector 2
 typedef struct {
     float x, y;
@@ -49,10 +52,12 @@ typedef struct {
 #define TARGET_Y 0b0010
 #define TARGET_Z 0b0100
 #define TARGET_W 0b1000
+#define TARGET_ALL 0b1111
 
 #define AXIS_X 0b001
 #define AXIS_Y 0b010
 #define AXIS_Z 0b100
+#define AXIS_ALL 0b111
 
 // STACK ALLOCATING CONSTRUCTORS
 
@@ -128,7 +133,7 @@ mat3 mat3_identity();
 // returns a 3x3 float translation matrix based on the given translation vector
 // mat3 mat3_translation(vec3 translation);
 // returns a 3x3 float rotation matrix based on the given angle value (in degrees)
-// axes can either be AXIS_X, AXIS_Y, AXIS_Z or a combination of these given by doing bitwise OR
+// axes can either be AXIS_X, AXIS_Y, AXIS_Z, AXIS_ALL or a combination of these given by doing bitwise OR
 mat3 mat3_rotation(unsigned char axes, float angle);
 // returns a 3x3 float scaling matrix based on the given scale value
 mat3 mat3_scaling(vec3 scaling);
@@ -211,13 +216,13 @@ vec3 vec3_cross(vec3 v0, vec3 v1);
 
 // VECTOR INVERSE
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y, TARGET_ALL or a combination of these given by doing bitwise OR
 vec2 vec2_negate(vec2 v, unsigned char target);
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y or TARGET_Z or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y or TARGET_Z, TARGET_ALL or a combination of these given by doing bitwise OR
 vec3 vec3_negate(vec3 v, unsigned char target);
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y, TARGET_Z or TARGET_W or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y, TARGET_Z or TARGET_W, TARGET_ALL or a combination of these given by doing bitwise OR
 vec4 vec4_negate(vec4 v, unsigned char target);
 
 // VECTOR MAGNITUDE
@@ -328,3 +333,5 @@ void print_mat4(mat4 m, unsigned int precision);
 
 // prints out the given quaternion (precision specifies the number of decimal digits)
 void print_quat(quat q, unsigned int precision);
+
+#endif

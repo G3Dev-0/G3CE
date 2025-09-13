@@ -12,6 +12,8 @@
 
     **Math**
     - [**Linear Algebra**](#linear-algebra)
+    - [**Transform**](#transform)
+    - [**Camera**](#camera)
 
     **Graphics**
     - [**Renderer**](#renderer)
@@ -149,6 +151,57 @@ Width and height are the size of the window, fov is the field of view angle in d
 + `void print_vecN(vecN v, unsigned int precision)`: prints out the given vector with the specified float digit number (`unsigned int precision`)
 + `void print_matN(matN m, unsigned int precision)`: prints out the given matrix with the specified float digit number (`unsigned int precision`)
 + `void print_quat(quat q, unsigned int precision)`: prints out the given quaternion with the specified float digit number (`unsigned int precision`)
+
+#### Translate [#](#table-of-contents)
+This module represent the transform object. A transform is essentially a collection of three vectors representing the position, rotation and scale of an object.\
+It can be assigned to a used along with a Mesh to create a basic object that has a model to render and a place in the virtual world where to live.
+
+Transforms are dynamically allocated on the heap via `malloc()` and thus MUST be destroyed via `transform_destroy(Transform* t)` to prevent memory leaks!
+
+You can access the transform `position`, `rotation` and `scale` via the arrow operator:
+```C
+Transform* transform = transform_create();
+
+transform->position;
+transform->rotation;
+transform->scale;
+
+transform_destroy(transform);
+```
+
+Here are the operations you can perform ona  transform:
++ `Transform* transform_create()`: creates a blank transform (position and rotations will be zero vectors while scale will be a one vector) allocated on the heap and returns the pointer to it
++ `void transform_destroy(Transform* t)`: destroyes a previously created transform
+
++ `void transform_changePosition(Transform* t, vec3 translation)`: increments the given transform position by the given translation vector (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
++ `void transform_changeRotation(Transform* t, vec3 rotation)`: increments the given transform rotation by the given rotation vector (pitch, yaw, roll) (angles are in degrees)
++ `void transform_changeScale(Transform* t, vec3 scaling)`: increment the the given transform scale by the given scaling vector (xs, ys, zs)
+
++ `mat4 transform_getModelMatrix(Transform* t)`: calculates the model matrix for the given transform and returns it
+
+#### Camera [#](#table-of-contents)
+Similarly to the transform module, the camera module represents the camera object.
+
+You can access the camera `position`, `pitch` and `yaw` via the arrow operator:
+```C
+Camera* camera = camera_create();
+
+camera->position;
+camera->pitch;
+camera->yaw;
+
+camera_destroy(camera);
+```
+
+You can perform the following operations:
++ `Camera* camera_create()`: creates a camera positioned at the world origin (0, 0, 0) and looking forward with pitch and yaw angles both set to zero.\
+REMEMBER you MUST DESTROY the camera via camera_destroy()!
++ `void camera_destroy(Camera* c)`: destroys the given camera
+
++ `void camera_move(Camera* c, vec3 move)`: moves the given camera by the given move vector
++ `void camera_rotate(Camera* c, float xr, float yr)`: rotates the camera by the given angles (`xr` and `yr` being the rotation angles around the **x** and **y axes** respectively. Also known as **pitch** and **yaw**)
+
++ `void camera_getViewMatrix(Camera* c)`: calculates the view matrix for the given camera and returns it
 
 #### Renderer [#](#table-of-contents)
 The renderer module can be used to render meshed, enable shaders and have rapid access to some OpenGL functions.
@@ -393,6 +446,7 @@ Image loader\
 Home page: https://github.com/nothings/stb
 
 ### Version history [#](#table-of-contents)
++ **v1.0 b13092025-1:** added transform and camera objects
 + **v1.0 b13092025-0:** added linear algebra module
 + **v1.0 b12092025-0:** added 2D texture support
 + **v1.0 b11092025-0:** improved mesh implementation, added a renderer module to easily deals with some OpenGL functions
@@ -402,4 +456,4 @@ Home page: https://github.com/nothings/stb
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b13092025-0
+v1.0 b13092025-1

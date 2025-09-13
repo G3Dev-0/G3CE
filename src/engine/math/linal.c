@@ -196,7 +196,7 @@ mat3 mat3_identity() {
 // returns a 3x3 float translation matrix based on the given translation vector
 // mat3 mat3_translation(vec3 translation);
 // returns a 3x3 float rotation matrix based on the given angle value
-// axes can either be AXIS_X, AXIS_Y, AXIS_Z or a combination of these given by doing bitwise OR
+// axes can either be AXIS_X, AXIS_Y, AXIS_Z, AXIS_ALL or a combination of these given by doing bitwise OR
 mat3 mat3_rotation(unsigned char axes, float angle) {
     const float theta = angle * DEGREES_TO_RADIANS;
     mat3 result = mat3_identity();
@@ -492,7 +492,7 @@ vec3 vec3_cross(vec3 v0, vec3 v1) {
 
 // VECTOR INVERSE
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y, TARGET_ALL or a combination of these given by doing bitwise OR
 vec2 vec2_negate(vec2 v, unsigned char target) {
     return vec2_new(
         v.x * (target & TARGET_X ? -1 : 1),
@@ -500,7 +500,7 @@ vec2 vec2_negate(vec2 v, unsigned char target) {
     );
 }
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y or TARGET_Z or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y or TARGET_Z, TARGET_ALL or a combination of these given by doing bitwise OR
 vec3 vec3_negate(vec3 v, unsigned char target) {
     return vec3_new(
         v.x * (target & TARGET_X ? -1 : 1),
@@ -509,7 +509,7 @@ vec3 vec3_negate(vec3 v, unsigned char target) {
     );
 }
 // swaps the specified component(s) sign of the given vector and returns the result
-// target can either be TARGET_X, TARGET_Y, TARGET_Z or TARGET_W or a combination of these given by doing bitwise OR
+// target can either be TARGET_X, TARGET_Y, TARGET_Z or TARGET_W, TARGET_ALL or a combination of these given by doing bitwise OR
 vec4 vec4_negate(vec4 v, unsigned char target) {
     return vec4_new(
         v.x * (target & TARGET_X ? -1 : 1),
