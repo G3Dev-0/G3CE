@@ -1,9 +1,10 @@
 /*
 LINEAR ALGEBRA MODULE
 Contains float vector 2, 3, 4 definitions,
-float matrix 2, 3, 4 definitions
-and stack allocating vector and matrix constructors.
-For dynamically allocating vector and matrix constructors
+float matrix 2, 3, 4 definitions,
+quaternion definitions
+and stack allocating vector, matrix and quaternion constructors.
+For dynamically allocating vector, matrix and quaternion constructors
 there will be the transform module, which will be part of the game_object module
 (extended object lifetime makes heap allocation a better approach).
 */
@@ -333,7 +334,7 @@ mat4 matrix_orthographic_projection(float left, float right, float bottom, float
 // returns a perspective projection matrix given the projection parameters
 // FOV should be provided in DEGREES
 mat4 matrix_perspective_projection(int width, int height, float fov, float near, float far) {
-    const float aspectRatio = (float) height / (float) width;
+    const float aspectRatio = (float) width / (float) height;
     const float tanHalfFov = tan(fov * DEGREES_TO_RADIANS / 2);
     
     float entries[16] = {
