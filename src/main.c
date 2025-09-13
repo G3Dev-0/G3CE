@@ -74,7 +74,7 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    //TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
+    // TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
     renderer_useShader(shader);
     renderer_bindTexture(texture, 0);
     renderer_renderMesh(mesh);

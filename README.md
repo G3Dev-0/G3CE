@@ -10,6 +10,9 @@
     - [**Window**](#window)
     - [**Input**](#input)
 
+    **Math**
+    - [**Linear Algebra**](#linear-algebra)
+
     **Graphics**
     - [**Renderer**](#renderer)
     - [**Shader**](#shader)
@@ -75,6 +78,77 @@ This module contains all the useful handlers for keyboard and mouse input. Namel
 + `double input_getMouseX()`: returns the mouse x position in the window (0 to window_width - 1 from LEFT to RIGHT)
 + `double input_getMouseY()`: returns the mouse y position in the window (0 to window_height - 1 from TOP to BOTTOM)
 + `int input_getMouseScroll()`: returns the mouse scroll (0 when not scrolling, NEGATIVE when scrolling DOWNWARDS, POSITIVE when scrolling UPWARDS)
+
+#### Linear Algebra [#](#table-of-contents)
+The linear algebra (`linal.h`) module contains all the heavy math implementations for 2D, 3D and 4D vectors and matrices, as well as quaternions.
+
+The used coordinate system is y-up, meaning in the three axes cartesian system the `x` and `z` components are the **horizontal** ones, while `y` is the **vertical** component.
+
+Here are the main functions explenations.
+
+**Stack allocator constructors**\
+Those can be used to generate a quick ready-to-use vector, matrix or quaternion.\
++ `vecN vecN_new(float x, float y, ...)`: creates an N dimensional float vector where N is either 2, 3 or 4
++ `matN matN_new(float entries[N])`: creates an NxN float matrix.\
+*Note:* `entries` is in row-major convention, meaning you shall give the entries **row by row**.
++ `quat quat_new(float w, float x, float y, float z)`: creates a new quaternion with `w` being the **scalar part** and `x`, `y`, `z` the components of the **vector part**
+
+**Vector functions and operations**
++ `vecN vecN_zero()`: creates an N dimensional float vector with all components set to zero and returns it
++ `vecN vecN_one()`: creates an N dimensional float vector with all components set to one and returns it
++ `vecN vecN_sum(vecN v0, vecN v1)`: sums the two given vectors and returns the result
++ `vecN vecN_difference(vecN v0, vecN v1)`: subtracts the two given vectors and returns the result (equivalent to scaling `v1` by `-1` and summing it to `v0`)
++ `vecN vecN_scale(vecN v, float s)`: scales the given vector v by the given float s and returns the result
++ `float vecN_dot(vecN v0, vecN v1)`: evaluates the dot product of the two given vectors and returns the result
++ `vec3 vec3_cross(vec3 v0, vec3 v1)`: evaluates the cross product of the two given 3D vectors and returns the result
++ `vecN vecN_negate(vecN v, unsigned char target)`: multiplies the target components of the given vector by `-1`.\
+Target can either be `TARGET_X`, `TARGET_Y`, `TARGET_Z` or a combination of these obtained by doing a **bitwise OR** between the needed targets.
+E.g.: `TARGET_X | TARGET_Y` will negate the **x** and **y** component, but it will leave the **z** component unchanged.
++ `float vecN_magnitude(vecN v)`: evaluates the magnitude of the given vector and returns the result
++ `vecN vecN_normalize(vecN v)`: normalizes the given vector and returns the result
+
+**Matrix functions and operations**
++ `matN matN_zero()`: creates an NxN matrix with all entries set to zero and returns it
++ `matN matN_one()`: creates an NxN matrix with all entries set to one and returns it
++ `matN matN_identity()`: creates an NxN identity matrix (a matrix with all entries set to zero apart from the ones in the main diagonal which are all set to one) and returns it
++ `mat2 mat2_rotation(float angle)`: creates a 2x2 rotation matrix based on the given angle in degrees
++ `mat2 mat2_scaling(vec2 scaling)`: creates a 2x2 scaling matrix based on the given scaling vector
++ `mat3 mat3_rotation(unsigned char axes, float angle)`: creates a 3x3 rotation matrix based on the given angle in degrees and the axes around which the rotation has to be applied.\
+Axes can either be `AXIS_X`, `AXIS_Y`, `AXIS_Z` or a combination of these obtained by doing **bitwise OR** between the needed axes.
+E.g.: `AXIS_X | AXIS_Y` will apply the rotation both around the **x axis** and the **y axis**, but **not** around the **z axis**.
++ `mat3 mat3_scaling(vec3 scaling)`: creates a 3x3 scaling matrix based on the given scaling vector
++ `mat4 mat4_translation(vec3 translation)`: creates a 4x4 translation matrix based on the given translation vector
++ `mat4 mat4_rotation(vec3 axis, float angle)`: creates a 4x4 rotation matrix based on the given axis direction (`vec3 axis`) and the given angle in degrees
++ `mat4 mat4_eulerRotation(vec3 angles)`: creates a 4x4 rotation matrix based on the given Tait-Bryan angles (pitch, yaw, roll) in degrees.\
+**Pitch** is the rotation around the **x axis**, **yaw** is around the **y axis** and **roll** is the rotation around the **z axis**.
++ `mat4 mat4_scaling(vec3 scaling)`: creates a 4x4 scaling matrix based on the given scaling vector
+
+**Projection matrices**
++ `mat4 matrix_orthographic_projection(float left, float right, float bottom, float top, float near, float far)`: returns an orthographic projection matrix given the projection parameters
++ `mat4 matrix_perspective_projection(int width, int height, float fov, float near, float far)`: returns a perspective projection matrix given the projection parameters.\
+Width and height are the size of the window, fov is the field of view angle in degrees, near and far are the distances of the camera from the near and far planes respectively.
++ `matN matN_sum(matN m0, matN m1)`: sums the two given matrices and returns the result
++ `matN matN_difference(matN m0, matN m1)`: subtracts the two given matrices and returns the result (equivalent to scaling one of the two matrices by `-1` and summing it to the other one)
++ `matN matN_scale(matN m, float s)`: scales the given matrix by the given float s and returns the result
++ `matN matN_multiply(matN m0, matN m1)`: multiplyes the two given matrices and returns the result
++ `matN matN_transpose(matN m)`: transposes the given matrix and returns the result
++ `matN matN_negate(matN m)`: scales the whole matrix by -1 and returns the result
+
+**Quaternions functions and operations**
++ `quat quat_zero()`: creates a quaternion with all components set to zero and returns it
++ `quat quat_identity()`: creates an identity quaternion (a quaternion with the scalar part set to one and the vector part being a zero vector)
++ `quat_rotation(vec3 axis, float angle)`: creates a rotation quaternion based on the given axis direction (`vec3 axis`) and the given angle in degrees, and returns it
++ `quat quat_multiply(quat q0, quat q1)`: multiplies the two given quaternions and returns the result
+
+**Mixed operations**
++ `vecN matN_vecN_multiply(matN m, vecN v)`: multiplies the given matrix by the given vector and returns the result
++ `mat4 quat_to_mat4(quat q)`: converts a rotation quaternion to a 4D rotation matrix and returns the result
++ `quat mat4_to_quat(mat4 m)`: converts a 4D rotation matrix to a rotation quaternion and returns the result
+
+**Output functions**
++ `void print_vecN(vecN v, unsigned int precision)`: prints out the given vector with the specified float digit number (`unsigned int precision`)
++ `void print_matN(matN m, unsigned int precision)`: prints out the given matrix with the specified float digit number (`unsigned int precision`)
++ `void print_quat(quat q, unsigned int precision)`: prints out the given quaternion with the specified float digit number (`unsigned int precision`)
 
 #### Renderer [#](#table-of-contents)
 The renderer module can be used to render meshed, enable shaders and have rapid access to some OpenGL functions.
@@ -319,6 +393,7 @@ Image loader\
 Home page: https://github.com/nothings/stb
 
 ### Version history [#](#table-of-contents)
++ **v1.0 b13092025-0:** added linear algebra module
 + **v1.0 b12092025-0:** added 2D texture support
 + **v1.0 b11092025-0:** improved mesh implementation, added a renderer module to easily deals with some OpenGL functions
 + **v1.0 b08092025-0:** implemented shader uniform handling, fixed offset in vertex attribute location registration
@@ -327,4 +402,4 @@ Home page: https://github.com/nothings/stb
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b12092025-0
+v1.0 b13092025-0

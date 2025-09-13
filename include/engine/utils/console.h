@@ -20,10 +20,9 @@ Output handling (info, warning, error, debug)
 #define COLOR_ORANGE  "\x1b[38;5;208m"
 #define COLOR_RESET   "\x1b[0m"
 
-// generic output function
-void console_generic_output(FILE* stream, const char* logLevel, const char* format, va_list* args);
-
-// generic output (just like a printf)
+// literally a printf
+void console_printf(const char* format, ...);
+// generic output (just like a printf but with also a new line character at the end)
 void console_output(const char* format, ...);
 // info log level
 void console_info(const char* format, ...);

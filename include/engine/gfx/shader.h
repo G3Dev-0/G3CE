@@ -6,9 +6,6 @@ Shader handler
 #ifndef SHADER_H
 #define SHADER_H
 
-// creates a shader from a file path ("./file" means it is in "g3ce")
-unsigned int shader_get(char* path, int type);
-
 // creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ce")
 unsigned int shader_create(char* vertexPath, char* fragmentPath);
 // destroys the given shader
