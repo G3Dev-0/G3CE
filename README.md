@@ -2,32 +2,32 @@
 **G3**Dev's **C** **E**ngine is an OpenGL engine useful for running simulations, creating games and for general purpose rendering.
 
 ## Table of Contents
-+ [**Using G3CE**](#using-g3ce)
-+ [**Engine modules**](#engine-modules)
++ [**Using G3CE**](#using-g3ce-)
++ [**Engine modules**](#engine-modules-)
 
     **Core**
-    - [**App**](#app)
-    - [**Window**](#window)
-    - [**Input**](#input)
+    - [**App**](#app-)
+    - [**Window**](#window-)
+    - [**Input**](#input-)
 
     **Math**
-    - [**Linear Algebra**](#linear-algebra)
-    - [**Transform**](#transform)
-    - [**Camera**](#camera)
+    - [**Linear Algebra**](#linear-algebra-)
+    - [**Transform**](#transform-)
+    - [**Camera**](#camera-)
 
     **Graphics**
-    - [**Renderer**](#renderer)
-    - [**Shader**](#shader)
-    - [**Mesh**](#mesh)
-    - [**Texture**](#texture)
+    - [**Renderer**](#renderer-)
+    - [**Shader**](#shader-)
+    - [**Mesh**](#mesh-)
+    - [**Texture**](#texture-)
     
     **Utils**
-    - [**Console**](#console)
-    - [**File**](#file)
-+ [**Using the engine**](#using-the-engine)
-+ [**Used technologies**](#used-technologies)
-+ [**Version history**](#version-history)
-+ [**About**](#about)
+    - [**Console**](#console-)
+    - [**File**](#file-)
++ [**Using the engine**](#using-the-engine-)
++ [**Used technologies**](#used-technologies-)
++ [**Version history**](#version-history-)
++ [**About**](#about-)
 
 ### Using G3CE [#](#table-of-contents)
 To use the library you can either import it or test it's features by running a file containing the necessary code. Said code can be manually written every time or it can be simply copied and pasted into a file from the `template.c` file.
