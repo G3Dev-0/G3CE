@@ -28,16 +28,58 @@ void renderer_setGLPolygonMode(unsigned int mode) {
     glPolygonMode(GL_FRONT_AND_BACK, mode);
 }
 
-// sets GL cull mode (either to GL_FRONT, GL_BACK (default), GL_FRONT_AND_BACK or -1 (disable face culling))
+// sets GL cull mode (either to GL_FRONT, GL_BACK (default), GL_FRONT_AND_BACK or 0 (disable face culling))
 void renderer_setGLCullMode(unsigned int mode) {
-    if (mode != GL_FRONT && mode != GL_BACK && mode != GL_FRONT_AND_BACK && mode != -1) {
+    if (mode != GL_FRONT && mode != GL_BACK && mode != GL_FRONT_AND_BACK && mode != 0) {
         console_warning("Invalid cull mode for %u", mode);
         return;
     }
 
-    if (mode == -1) glDisable(GL_CULL_FACE);
-    else glEnable(GL_CULL_FACE);
-    glCullFace(mode);
+    if (mode == 0) {
+        glDisable(GL_CULL_FACE);
+    } else {
+        glEnable(GL_CULL_FACE);
+        glCullFace(mode);
+    }
+}
+
+// sets GL depth test function
+// the fragments depth value goes from 0.0 (near) to 1.0 (far),
+// meaning GL_LESS should be the go-to depth testing function
+// when not changing the projection matrix provided by G3CE
+// KEEP IN MIND THAT IF YOU CHANGE THE PROJECTION MATRIX
+// YOU COULD HAVE REVERSED / CHANGED THE NEAR - FAR FRAGMENT DEPTH VALUE MAPPING
+// depthFunction can either be:
+// GL_ALWAYS    =    The depth test always passes (same as disabling the depth test, the objects get rendered in the order they are rendered in code)
+// GL_NEVER  	=    The depth test never passes
+// GL_LESS   	=    Passes if the fragment's depth value is less than the stored depth value
+// GL_EQUAL  	=    Passes if the fragment's depth value is equal to the stored depth value
+// GL_LEQUAL    =    Passes if the fragment's depth value is less than or equal to the stored depth value
+// GL_GREATER   =    Passes if the fragment's depth value is greater than the stored depth value
+// GL_NOTEQUAL  =    Passes if the fragment's depth value is not equal to the stored depth value
+// GL_GEQUAL    =    Passes if the fragment's depth value is greater than or equal to the stored depth value
+// 0            =    Disables OpenGL depth test
+void renderer_setGLDepthTest(unsigned int depthFunction) {
+    if (depthFunction != GL_ALWAYS
+        && depthFunction != GL_NEVER
+        && depthFunction != GL_LESS
+        && depthFunction != GL_EQUAL
+        && depthFunction != GL_LEQUAL
+        && depthFunction != GL_GREATER
+        && depthFunction != GL_NOTEQUAL
+        && depthFunction != GL_GEQUAL
+        && depthFunction != 0) {
+        console_warning("Invalid depth function for %u", depthFunction);
+        return;
+    }
+
+    if (depthFunction == 0) {
+        glDisable(GL_DEPTH_TEST);
+    } else {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(depthFunction);
+        glDepthMask(GL_TRUE);
+    }
 }
 
 /*

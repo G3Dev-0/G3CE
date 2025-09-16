@@ -33,97 +33,83 @@ void transform_destroy(Transform* t) {
     free(t);
 }
 
-// // SETTERS
-// // sets the given transform position
-// void transform_setPosAll(Transform* t, float x, float y, float z) {
-//     t->position.x = x;
-//     t->position.y = y;
-//     t->position.z = z;
-// }
-// // sets the given transform position
-// void transform_setPos(Transform* t, vec3 pos) {
-//     t->position = pos;
-// }
-// // sets the given transform x position
-// void transform_setPosX(Transform* t, float x) {
-//     t->position.x = x;
-// }
-// // sets the given transform y position
-// void transform_setPosY(Transform* t, float y) {
-//     t->position.y = y;
-// }
-// // sets the given transform z position
-// void transform_setPosZ(Transform* t, float z) {
-//     t->position.z = z;
-// }
-
-// // sets the given transform rotation
-// void transform_setRotAll(Transform* t, float pitch, float yaw, float roll) {
-//     t->rotation.x = pitch;
-//     t->rotation.y = yaw;
-//     t->rotation.z = roll;
-// }
-// // sets the given transform rotation
-// void transform_setRot(Transform* t, vec3 rot) {
-//     t->rotation = rot;
-// }
-// // sets the given transform x rotation
-// void transform_setRotX(Transform* t, float pitch) {
-//     t->rotation.x = pitch;
-// }
-// // sets the given transform y rotation
-// void transform_setRotY(Transform* t, float yaw) {
-//     t->rotation.y = yaw;
-// }
-// // sets the given transform z rotation
-// void transform_setRotZ(Transform* t, float roll) {
-//     t->rotation.z = roll;
-// }
-
-// // sets the given transform scale
-// void transform_setScaleAll(Transform* t, float xs, float ys, float zs) {
-//     t->scale.x = xs;
-//     t->scale.y = ys;
-//     t->scale.z = zs;
-// }
-// // sets the given transform scale
-// void transform_setScale(Transform* t, vec3 scale) {
-//     t->scale = scale;
-// }
-// // sets the given transform x scale
-// void transform_setScaleX(Transform* t, float xs) {
-//     t->scale.x = xs;
-// }
-// // sets the given transform y scale
-// void transform_setScaleY(Transform* t, float ys) {
-//     t->scale.y = ys;
-// }
-// // sets the given transform z scale
-// void transform_setScaleZ(Transform* t, float zs) {
-//     t->scale.z = zs;
-// }
+// SETTERS
+// sets the given transform position to the given position values (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
+void transform_setPosition(Transform* t, float x, float y, float z) {
+    t->position.x = x;
+    t->position.y = y;
+    t->position.z = z;
+}
+// sets the given transform rotation to the given rotation values
+void transform_setRotation(Transform* t, float pitch, float yaw, float roll) {
+    t->rotation.x = pitch;
+    t->rotation.y = yaw;
+    t->rotation.z = roll;
+}
+// sets the given transform scale to the given scale values
+void transform_setScale(Transform* t, float xs, float ys, float zs) {
+    t->scale.x = xs;
+    t->scale.y = ys;
+    t->scale.z = zs;
+}
 
 // OPERATIONS
 // increments the given transform position by the given translation vector (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
 void transform_changePosition(Transform* t, vec3 translation) {
-    t->position = vec3_sum(t->position, translation);
+    t->position.x += translation.x;
+    t->position.y += translation.y;
+    t->position.z += translation.z;
 }
-
 // increments the given transform rotation by the given rotation vector (pitch, yaw, roll) (angles are in degrees)
 void transform_changeRotation(Transform* t, vec3 rotation) {
-    t->rotation = vec3_sum(t->rotation, rotation);
+    t->rotation.x += rotation.x;
+    t->rotation.y += rotation.y;
+    t->rotation.z += rotation.z;
 }
-
 // increment the the given transform scale by the given scaling vector (xs, ys, zs)
 void transform_changeScale(Transform* t, vec3 scaling) {
-    t->scale = vec3_sum(t->scale, scaling);
+    t->scale.x += scaling.x;
+    t->scale.y += scaling.y;
+    t->scale.z += scaling.z;
+}
+
+// increments the given transform position by the given translation values (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
+void transform_changePositionValues(Transform* t, float xm, float ym, float zm) {
+    t->position.x += xm;
+    t->position.y += ym;
+    t->position.z += zm;
+}
+// increments the given transform rotation by the given rotation values (pitch, yaw, roll) (angles are in degrees)
+void transform_changeRotationValues(Transform* t, float xr, float yr, float zr) {
+    t->rotation.x += xr;
+    t->rotation.y += yr;
+    t->rotation.z += zr;
+}
+// increment the the given transform scale by the given scaling values (xs, ys, zs)
+void transform_changeScaleValues(Transform* t, float xs, float ys, float zs) {
+    t->scale.x += xs;
+    t->scale.y += ys;
+    t->scale.z += zs;
 }
 
 // MATRIX
 // calculates the model matrix for the given transform and returns it
 mat4 transform_getModelMatrix(Transform* t) {
     mat4 scaleMatrix = mat4_scaling(t->scale);
-    mat4 rotationMatrix = mat4_eulerRotation(t->rotation);
+
+    // TEST
+    // use a quaternion based rotation system
+    quat xRot = quat_rotation(vec3_new(1, 0, 0), t->rotation.x);
+    quat yRot = quat_rotation(vec3_new(0, 1, 0), t->rotation.y);
+    quat zRot = quat_rotation(vec3_new(0, 0, 1), t->rotation.z);
+    quat rotationQuat = quat_multiply(xRot, yRot);
+    rotationQuat = quat_multiply(rotationQuat, zRot);
+    // convert to rotation matrix
+    mat4 rotationMatrix = quat_to_mat4(rotationQuat);
+    
+    // IF TEST FAILES USE THIS
+    // mat4 rotationMatrix = mat4_eulerRotation(t->rotation);
+    
     mat4 translationMatrix = mat4_translation(t->position);
 
     // scale first, then rotate and finally translate

@@ -69,47 +69,89 @@ void shader_destroy(unsigned int programID) {
 
 // UNIFORMs
 // sets boolean uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setBoolean(const unsigned int programID, const char* name, bool value) {
     int location = glGetUniformLocation(programID, name);
     glUniform1i(location, value);
 }
 // sets float uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setFloat(const unsigned int programID, const char* name, float value) {
     int location = glGetUniformLocation(programID, name);
     glUniform1f(location, value);
 }
 // sets integer uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setInteger(const unsigned int programID, const char* name, int value) {
     int location = glGetUniformLocation(programID, name);
     glUniform1i(location, value);
 }
 // sets float vector 2 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setFloat2(const unsigned int programID, const char* name, float value[2]) {
     int location = glGetUniformLocation(programID, name);
     glUniform2f(location, value[0], value[1]);
 }
 // sets int vector 2 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setInteger2(const unsigned int programID, const char* name, int value[2]) {
     int location = glGetUniformLocation(programID, name);
     glUniform2i(location, value[0], value[1]);
 }
 // sets float vector 3 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setFloat3(const unsigned int programID, const char* name, float value[3]) {
     int location = glGetUniformLocation(programID, name);
     glUniform3f(location, value[0], value[1], value[2]);
 }
 // sets int vector 3 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setInteger3(const unsigned int programID, const char* name, int value[3]) {
     int location = glGetUniformLocation(programID, name);
     glUniform3i(location, value[0], value[1], value[2]);
 }
 // sets float vector 4 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setFloat4(const unsigned int programID, const char* name, float value[4]) {
     int location = glGetUniformLocation(programID, name);
     glUniform4f(location, value[0], value[1], value[2], value[3]);
 }
 // sets int vector 4 uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
 void shader_setInteger4(const unsigned int programID, const char* name, int value[4]) {
     int location = glGetUniformLocation(programID, name);
     glUniform4i(location, value[0], value[1], value[2], value[3]);
+}
+// sets 2x2 float matrix uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
+void shader_setMatrix2(const unsigned int programID, const char* name, mat2 value) {
+    int location = glGetUniformLocation(programID, name);
+    // GL_TRUE is there to transpose the matrix as glUniformMatrix2fv() uses column-major order while linal.h uses row-major order
+    glUniformMatrix2fv(location, 1, GL_TRUE, value.entries);
+}
+// sets 3x3 float matrix uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
+void shader_setMatrix3(const unsigned int programID, const char* name, mat3 value) {
+    int location = glGetUniformLocation(programID, name);
+    // GL_TRUE is there to transpose the matrix as glUniformMatrix2fv() uses column-major order while linal.h uses row-major order
+    glUniformMatrix3fv(location, 1, GL_TRUE, value.entries);
+}
+// sets 4x4 float matrix uniform
+// YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
+// so remember to call renderer_useShader(int shader) first!
+void shader_setMatrix4(const unsigned int programID, const char* name, mat4 value) {
+    int location = glGetUniformLocation(programID, name);
+    // GL_TRUE is there to transpose the matrix as glUniformMatrix2fv() uses column-major order while linal.h uses row-major order
+    glUniformMatrix4fv(location, 1, GL_TRUE, value.entries);
 }

@@ -28,4 +28,9 @@ void window_setFullscreen(bool fullscreen);
 // toggles window fullscreen/windowed mode
 void window_toggleFullscreen();
 
+// returns the window width
+float window_getWidth();
+// returns the window height
+float window_getHeight();
+
 #endif

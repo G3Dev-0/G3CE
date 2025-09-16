@@ -9,5 +9,7 @@ void main_tick();
 void main_draw();
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit();
+// resize function (called once at the start after the main_init() call and once every time a window resize event occurs)
+void on_resize();
 
 #endif

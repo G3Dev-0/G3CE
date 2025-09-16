@@ -12,6 +12,10 @@ there will be the transform module, which will be part of the game_object module
 #ifndef LINAL_H
 #define LINAL_H
 
+#define PI 3.14159265359
+#define DEGREES_TO_RADIANS PI / 180
+#define RADIANS_TO_DEGREES 180 / PI
+
 // float Vector 2
 typedef struct {
     float x, y;
@@ -157,10 +161,10 @@ mat4 mat4_eulerRotation(vec3 angles);
 mat4 mat4_scaling(vec3 scaling);
 
 // returns an orthographic projection matrix given the projection parameters
-mat4 matrix_orthographic_projection(float left, float right, float bottom, float top, float near, float far);
+mat4 matrix_getOrthographicProjection(float left, float right, float bottom, float top, float near, float far);
 // returns a perspective projection matrix given the projection parameters
 // FOV should be provided in DEGREES
-mat4 matrix_perspective_projection(int width, int height, float fov, float near, float far);
+mat4 matrix_getPerspectiveProjection(float width, float height, float fov, float near, float far);
 
 // QUATERNIONS
 // quat stack allocating constructor

@@ -16,10 +16,6 @@ there will be the transform module, which will be part of the game_object module
 
 #include "engine/math/linal.h"
 
-#define PI 3.14159265359
-#define DEGREES_TO_RADIANS PI / 180
-#define RADIANS_TO_DEGREES 180 / PI
-
 // STACK ALLOCATING CONSTRUCTORS
 
 // VECTORS
@@ -56,7 +52,10 @@ vec2 vec2_zero() {
 }
 // returns a float vector 2 with all components set to 1
 vec2 vec2_one() {
-    return (vec2) {1};
+    return (vec2) {
+        .x = 1,
+        .y = 1
+    };
 }
 // returns a float vector 3 with all components set to 0
 vec3 vec3_zero() {
@@ -64,7 +63,11 @@ vec3 vec3_zero() {
 }
 // returns a float vector 3 with all components set to 1
 vec3 vec3_one() {
-    return (vec3) {1};
+    return (vec3) {
+        .x = 1,
+        .y = 1,
+        .z = 1
+    };
 }
 // returns a float vector 4 with all components set to 0
 vec4 vec4_zero() {
@@ -72,7 +75,12 @@ vec4 vec4_zero() {
 }
 // returns a float vector 4 with all components set to 1
 vec4 vec4_one() {
-    return (vec4) {1};
+    return (vec4) {
+        .x = 1,
+        .y = 1,
+        .z = 1,
+        .w = 1
+    };
 }
 
 // MATRICES
@@ -322,28 +330,28 @@ mat4 mat4_scaling(vec3 scaling) {
 }
 
 // returns an orthographic projection matrix given the projection parameters
-mat4 matrix_orthographic_projection(float left, float right, float bottom, float top, float near, float far) {
+mat4 matrix_getOrthographicProjection(float left, float right, float bottom, float top, float near, float far) {
     float entries[16] = {
-        2 / (right - left), 0,                  0,                  -(right + left) / (right - left),
-        0,                  2 / (top - bottom), 0,                  -(top + bottom) / (top - bottom),
-        0,                  0,                  -2 / (far - near),  -(far + near) / (far - near),
-        0,                  0,                  0,                  1
+        2.0f / (right - left), 0.0f,                  0.0f,                  -(right + left) / (right - left),
+        0.0f,                  2.0f / (top - bottom), 0.0f,                  -(top + bottom) / (top - bottom),
+        0.0f,                  0.0f,                  -2.0f / (far - near),  -(far + near) / (far - near),
+        0.0f,                  0.0f,                  0.0f,                  1.0f
     };
-    mat4 proj = mat4_new(entries);
+    return mat4_new(entries);
 }
 // returns a perspective projection matrix given the projection parameters
 // FOV should be provided in DEGREES
-mat4 matrix_perspective_projection(int width, int height, float fov, float near, float far) {
-    const float aspectRatio = (float) width / (float) height;
-    const float tanHalfFov = tan(fov * DEGREES_TO_RADIANS / 2);
+mat4 matrix_getPerspectiveProjection(float width, float height, float fov, float near, float far) {
+    const float aspectRatio = width / height;
+    const float tanHalfFov = tanf(fov * DEGREES_TO_RADIANS / 2);
     
     float entries[16] = {
-        1 / (aspectRatio * tanHalfFov), 0,              0,                              0,
-        0,                              1 / tanHalfFov, 0,                              0,
-        0,                              0,              -(far + near) / (far - near),   - (2 * far * near) / (far - near),
-        0,                              0,              -1,                             0
+        1.0f / (aspectRatio * tanHalfFov), 0.0f,              0.0f,                         0.0f,
+        0.0f,                              1.0f / tanHalfFov, 0.0f,                         0.0f,
+        0.0f,                              0.0f,              -(far + near) / (far - near), -(2.0f * far * near) / (far - near),
+        0.0f,                              0.0f,              -1.0f,                        0.0f
     };
-    mat4 proj = mat4_new(entries);
+    return mat4_new(entries);
 }
 
 // QUATERNIONS
@@ -536,15 +544,21 @@ float vec4_magnitude(vec4 v) {
 // VECTOR NORMALIZE
 // normalizes the given vector and returns the result
 vec2 vec2_normalize(vec2 v) {
-    return vec2_scale(v, 1 / vec2_magnitude(v));
+    const float magnitude = vec2_magnitude(v);
+    if (magnitude == 0) return v;
+    return vec2_scale(v, 1 / magnitude);
 }
 // normalizes the given vector and returns the result
 vec3 vec3_normalize(vec3 v) {
-    return vec3_scale(v, 1 / vec3_magnitude(v));
+    const float magnitude = vec3_magnitude(v);
+    if (magnitude == 0) return v;
+    return vec3_scale(v, 1 / magnitude);
 }
 // normalizes the given vector and returns the result
 vec4 vec4_normalize(vec4 v) {
-    return vec4_scale(v, 1 / vec4_magnitude(v));
+    const float magnitude = vec4_magnitude(v);
+    if (magnitude == 0) return v;
+    return vec4_scale(v, 1 / magnitude);
 }
 
 // MATRICES
@@ -641,7 +655,7 @@ void generic_matrix_multiplication(float* m0, float* m1, unsigned int r0, unsign
             for (int k = 0; k < n; k++) {
                 currentEntry += m0[k + i * n] * m1[j + k * c1];
             }
-            result[i + j * n] = currentEntry;
+            result[j + i * n] = currentEntry;
         }
     }
 }
@@ -658,7 +672,7 @@ mat2 mat2_multiply(mat2 m0, mat2 m1) {
     //         result.entries[i + j * 2] = currentEntry;
     //     }
     // }
-    generic_matrix_multiplication(m0.entries, m1.entries, 2, 2, 2, &result);
+    generic_matrix_multiplication(m0.entries, m1.entries, 2, 2, 2, result.entries);
     return result;
 }
 // multiplies two matrices and returns the result
@@ -673,7 +687,7 @@ mat3 mat3_multiply(mat3 m0, mat3 m1) {
     //         result.entries[i + j * 3] = currentEntry;
     //     }
     // }
-    generic_matrix_multiplication(m0.entries, m1.entries, 3, 3, 3, &result);
+    generic_matrix_multiplication(m0.entries, m1.entries, 3, 3, 3, result.entries);
     return result;
 }
 // multiplies two matrices and returns the result
@@ -688,7 +702,7 @@ mat4 mat4_multiply(mat4 m0, mat4 m1) {
     //         result.entries[i + j * 4] = currentEntry;
     //     }
     // }
-    generic_matrix_multiplication(m0.entries, m1.entries, 4, 4, 4, &result);
+    generic_matrix_multiplication(m0.entries, m1.entries, 4, 4, 4, result.entries);
     return result;
 }
 
@@ -883,12 +897,13 @@ void print_vec4(vec4 v, unsigned int precision) {
 
 void generic_matrix_printer(float* entries, unsigned int size, unsigned int precision) {
     // row loop
+
     for (int i = 0; i < size; i++) {
         // print the first entry in the row
-        console_printf("[%.*f", precision, entries[i]);
+        console_printf("[%.*f", precision, entries[i * size]);
         // column loop
         for (int j = 1; j < size; j++) {
-            console_printf(", %.*f", precision, entries[i + j * size]);
+            console_printf(", %.*f", precision, entries[j + i * size]);
         }
         // print the closing square bracket at the end of each line
         console_printf("]\n");

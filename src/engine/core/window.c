@@ -15,6 +15,8 @@ Window handling with GLFW and OpenGL initialization with GLAD
 
 #include "engine/core/window.h"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 // used for fullscreen-windowed mode switching
 int window_width, window_height, window_xpos, window_ypos;
 bool is_fullscreen;
@@ -30,6 +32,8 @@ GLFWwindow* window_create(int width, int height, char* title, bool resizable) {
     glfwWindowHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
     
     glfwWindowHint(GLFW_RESIZABLE, resizable);
+    
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
     // create the window
     GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -41,6 +45,9 @@ GLFWwindow* window_create(int width, int height, char* title, bool resizable) {
 
     // make context current (necessary to make OpenGL work)
     glfwMakeContextCurrent(window);
+
+    // set GLFW window callbacks
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // initialise OpenGL variables manager
     
@@ -56,9 +63,6 @@ GLFWwindow* window_create(int width, int height, char* title, bool resizable) {
     // setting GLFW callbacks
     glfwSetCursorPosCallback(window, mouse_position_callback);
     glfwSetScrollCallback(window, mouse_scroll_callback);
-
-    // set OpenGL viewport
-    glViewport(0, 0, width, height);
 
     return window;
 }
@@ -134,4 +138,24 @@ void window_setFullscreen(bool fullscreen) {
 void window_toggleFullscreen() {
     if (is_fullscreen) window_setFullscreen(false);
     else window_setFullscreen(true);
+}
+
+// returns the window width
+float window_getWidth() {
+    int width;
+    glfwGetWindowSize(window, &width, NULL);
+    return (float) width;
+}
+// returns the window height
+float window_getHeight() {
+    int height;
+    glfwGetWindowSize(window, NULL, &height);
+    return (float) height;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    // set OpenGL viewport
+    glViewport(0, 0, width, height);
+
+    FLAG_WINDOW_RESIZED = true;
 }

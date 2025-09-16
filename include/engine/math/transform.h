@@ -23,49 +23,28 @@ Transform* transform_create();
 // destroys the given transform object
 void transform_destroy(Transform* t);
 
-// // SETTERS
-// // sets the given transform position
-// void transform_setPosAll(Transform* t, float x, float y, float z);
-// // sets the given transform position
-// void transform_setPos(Transform* t, vec3 pos);
-// // sets the given transform x position
-// void transform_setPosX(Transform* t, float x);
-// // sets the given transform y position
-// void transform_setPosY(Transform* t, float y);
-// // sets the given transform z position
-// void transform_setPosZ(Transform* t, float z);
-
-// // sets the given transform rotation
-// void transform_setRotAll(Transform* t, float pitch, float yaw, float roll);
-// // sets the given transform rotation
-// void transform_setRot(Transform* t, vec3 rot);
-// // sets the given transform x rotation
-// void transform_setRotX(Transform* t, float pitch);
-// // sets the given transform y rotation
-// void transform_setRotY(Transform* t, float yaw);
-// // sets the given transform z rotation
-// void transform_setRotZ(Transform* t, float roll);
-
-// // sets the given transform scale
-// void transform_setScaleAll(Transform* t, float xs, float ys, float zs);
-// // sets the given transform scale
-// void transform_setScale(Transform* t, vec3 scale);
-// // sets the given transform x scale
-// void transform_setScaleX(Transform* t, float xs);
-// // sets the given transform y scale
-// void transform_setScaleY(Transform* t, float ys);
-// // sets the given transform z scale
-// void transform_setScaleZ(Transform* t, float zs);
+// SETTERS
+// sets the given transform position to the given position values (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
+void transform_setPosition(Transform* t, float x, float y, float z);
+// sets the given transform rotation to the given rotation values
+void transform_setRotation(Transform* t, float pitch, float yaw, float roll);
+// sets the given transform scale to the given scale values
+void transform_setScale(Transform* t, float xs, float ys, float zs);
 
 // OPERATIONS
 // increments the given transform position by the given translation vector (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
 void transform_changePosition(Transform* t, vec3 translation);
-
 // increments the given transform rotation by the given rotation vector (pitch, yaw, roll) (angles are in degrees)
 void transform_changeRotation(Transform* t, vec3 rotation);
-
 // increment the the given transform scale by the given scaling vector (xs, ys, zs)
 void transform_changeScale(Transform* t, vec3 scaling);
+
+// increments the given transform position by the given translation values (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
+void transform_changePositionValues(Transform* t, float xm, float ym, float zm);
+// increments the given transform rotation by the given rotation values (pitch, yaw, roll) (angles are in degrees)
+void transform_changeRotationValues(Transform* t, float xr, float yr, float zr);
+// increment the the given transform scale by the given scaling values (xs, ys, zs)
+void transform_changeScaleValues(Transform* t, float xs, float ys, float zs);
 
 // MATRIX
 // calculates the model matrix for the given transform and returns it

@@ -43,6 +43,7 @@ add_executable(${PROJECT_NAME}
     src/engine/gfx/texture.c
     src/engine/utils/console.c
     src/engine/utils/file.c
+    src/engine/globals.c
 )
 
 # link the libraries to the project

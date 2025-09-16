@@ -25,6 +25,7 @@
     - [**Console**](#console-)
     - [**File**](#file-)
 + [**Using the engine**](#using-the-engine-)
++ [**Some theory and explainations**](#some-theory-and-explainations-)
 + [**Used technologies**](#used-technologies-)
 + [**Version history**](#version-history-)
 + [**About**](#about-)
@@ -42,12 +43,13 @@ To start the app you first create the app by calling `app_create(int width, int 
 
 To actually show the window and start the program you should call the `app_loop()`.\
 This function will enter the main loop and actually run the app.\
-Remember that `app_loop()` requires 4 `void (*f)()` type parameters.\
+Remember that `app_loop()` requires 5 `void (*f)()` type parameters.\
 Those 4 parameters are the initialization, update, render and exit functions for your app. Each of them is called in a specific moment during runtime. Here are their purpuses:
 - `void main_init()`: initialization function, it is called only once right before entering the main loop
 - `void main_tick()`: update function, it is called once every frame before clearing the previous frame
 - `void main_draw()`: rendering function, it is called once every frame right after clearing the previous frame
 - `void main_exit()`: exit function, it is called only once after leaving the main loop, before terminating the app
+- `void on_resize()`: // // resize function (called once at the start after the main_init() call and once every time a window resize event occurs)
 
 Finally there are two functions:
 + `void app_requestClose()`: requests the app to close.\
@@ -68,6 +70,10 @@ Here are all the contained functions and their purpuse.
 + `void window_setIcon(char* filename)`: sets the window icon
 + `void window_setFullscreen(bool fullscreen):` sets window fullscreen/windowed mode
 + `void window_toggleFullscreen():` toggles window fullscreen/windowed mode
+
+**WINDOW PARAMETERS**
++ `float window_getWidth()`: returns the window width
++ `float window_getHeight()`: returns the window height
 
 #### Input [#](#table-of-contents)
 This module contains all the useful handlers for keyboard and mouse input. Namely:
@@ -126,8 +132,8 @@ E.g.: `AXIS_X | AXIS_Y` will apply the rotation both around the **x axis** and t
 + `mat4 mat4_scaling(vec3 scaling)`: creates a 4x4 scaling matrix based on the given scaling vector
 
 **Projection matrices**
-+ `mat4 matrix_orthographic_projection(float left, float right, float bottom, float top, float near, float far)`: returns an orthographic projection matrix given the projection parameters
-+ `mat4 matrix_perspective_projection(int width, int height, float fov, float near, float far)`: returns a perspective projection matrix given the projection parameters.\
++ `mat4 matrix_getOrthographicProjection(float left, float right, float bottom, float top, float near, float far)`: returns an orthographic projection matrix given the projection parameters
++ `mat4 matrix_getPerspectiveProjection(float width, float height, float fov, float near, float far)`: returns a perspective projection matrix given the projection parameters.\
 Width and height are the size of the window, fov is the field of view angle in degrees, near and far are the distances of the camera from the near and far planes respectively.
 + `matN matN_sum(matN m0, matN m1)`: sums the two given matrices and returns the result
 + `matN matN_difference(matN m0, matN m1)`: subtracts the two given matrices and returns the result (equivalent to scaling one of the two matrices by `-1` and summing it to the other one)
@@ -152,7 +158,7 @@ Width and height are the size of the window, fov is the field of view angle in d
 + `void print_matN(matN m, unsigned int precision)`: prints out the given matrix with the specified float digit number (`unsigned int precision`)
 + `void print_quat(quat q, unsigned int precision)`: prints out the given quaternion with the specified float digit number (`unsigned int precision`)
 
-#### Translate [#](#table-of-contents)
+#### Transform [#](#table-of-contents)
 This module represent the transform object. A transform is essentially a collection of three vectors representing the position, rotation and scale of an object.\
 It can be assigned to a used along with a Mesh to create a basic object that has a model to render and a place in the virtual world where to live.
 
@@ -173,9 +179,17 @@ Here are the operations you can perform ona  transform:
 + `Transform* transform_create()`: creates a blank transform (position and rotations will be zero vectors while scale will be a one vector) allocated on the heap and returns the pointer to it
 + `void transform_destroy(Transform* t)`: destroyes a previously created transform
 
++ `void transform_setPosition(Transform* t, float x, float y, float z)`: sets the given transform position to the given position values (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
++ `void transform_setRotation(Transform* t, float pitch, float yaw, float roll)`: sets the given transform rotation to the given rotation values
++ `void transform_setScale(Transform* t, float xs, float ys, float zs)`: sets the given transform scale to the given scale values
+
 + `void transform_changePosition(Transform* t, vec3 translation)`: increments the given transform position by the given translation vector (x, y, z) (right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
 + `void transform_changeRotation(Transform* t, vec3 rotation)`: increments the given transform rotation by the given rotation vector (pitch, yaw, roll) (angles are in degrees)
 + `void transform_changeScale(Transform* t, vec3 scaling)`: increment the the given transform scale by the given scaling vector (xs, ys, zs)
+
++ `void transform_changePositionValues(Transform* t, float xm, float ym, float zm)`: increments the given transform position by the given translation values (x, y, z) (using right-handed system: +x to the right, +y up, +z towards you that are reading this right now!)
++ `void transform_changeRotationValues(Transform* t, float xr, float yr, float zr)`: increments the given transform rotation by the given rotation values (pitch, yaw, roll) (angles are in degrees)
++ `void transform_changeScaleValues(Transform* t, float xs, float ys, float zs)`: increment the the given transform scale by the given scaling values (xs, ys, zs)
 
 + `mat4 transform_getModelMatrix(Transform* t)`: calculates the model matrix for the given transform and returns it
 
@@ -187,20 +201,40 @@ You can access the camera `position`, `pitch` and `yaw` via the arrow operator:
 Camera* camera = camera_create();
 
 camera->position; // this is a vec3 from linal.h
-camera->pitch; // this is a float
-camera->yaw; // this is a float
+camera->rotation; // this is a vec3 from linal.h
 
 camera_destroy(camera);
 ```
 
 You can perform the following operations:
-+ `Camera* camera_create()`: creates a camera positioned at the world origin (0, 0, 0) and looking forward with pitch and yaw angles both set to zero.\
++ `Camera* camera_create()`: creates a camera positioned at the world origin (0, 0, 0) and looking forward with rotation angles all set to zero.\
 REMEMBER you MUST DESTROY the camera via camera_destroy()!
 + `void camera_destroy(Camera* c)`: destroys the given camera
 
-+ `void camera_move(Camera* c, vec3 move)`: moves the given camera by the given move vector
-+ `void camera_rotate(Camera* c, float xr, float yr)`: rotates the camera by the given angles (`xr` and `yr` being the rotation angles around the **x** and **y axes** respectively. Also known as **pitch** and **yaw**)
+**SETTERS**
++ `void camera_setPosition(Camera* c, float x, float y, float z)`: sets the given camera position to the given coordinates values
++ `void camera_setRotation(Camera* c, float pitch, float yaw, float roll)`: sets the given camera position to the given pitch, yaw and roll values
 
+**OPERATIONS**
++ `void camera_moveByVector(Camera* c, vec3 move)`: moves the given camera by the given move vector
++ `void camera_move(Camera* c, float xm, float ym, float zm)`: moves the given camera by the given motion values
++ `void camera_rotateByVector(Camera* c, vec3 rotation)`: rotates the camera by the given rotation vector
++ `void camera_rotate(Camera* c, float xr, float yr, float zr)`: rotates the camera by the given angles
+
+**CAMERA COORDINATE SYSTEM**
++ `vec3 camera_getPositiveX(Camera* c)`: returns the x axis direction of the camera centered coordinate system
++ `vec3 camera_getPositiveY(Camera* c)`: returns the y axis direction of the camera centered coordinate system
++ `vec3 camera_getPositiveZ(Camera* c)`: returns the z axis direction of the camera centered coordinate system
+
++ `vec3 camera_getForward(Camera* c)`: returns the forward vector (the vector pointing forward with respect to the camera)
++ `vec3 camera_getUp(Camera* c)`: returns the up vector (the vector pointing up with respect to the camera)
++ `vec3 camera_getRight(Camera* c)`: returns the right vector (the vector pointing right with respect to the camera)
+
++ `vec3 camera_getBackward(Camera* c)`: returns the backward vector (the vector pointing backward with respect to the camera)
++ `vec3 camera_getDown(Camera* c)`: returns the down vector (the vector pointing down with respect to the camera)
++ `vec3 camera_getLeft(Camera* c)`: returns the left vector (the vector pointing left with respect to the camera)
+
+**MATRIX**
 + `void camera_getViewMatrix(Camera* c)`: calculates the view matrix for the given camera and returns it
 
 #### Renderer [#](#table-of-contents)
@@ -316,21 +350,33 @@ This simple program renders a colorful quad at the center of the screen.
 #include "engine/app.h"
 #include "engine/core/window.h"
 #include "engine/core/input.h"
+#include "engine/math/transform.h"
+#include "engine/math/linal.h"
+#include "engine/math/camera.h"
 #include "engine/gfx/mesh.h"
 #include "engine/gfx/renderer.h"
 #include "engine/gfx/shader.h"
+#include "engine/gfx/texture.h"
+#include "engine/utils/console.h"
 
 // you can also declare those four functions in a "main.h" file for good practice
 void main_init();
 void main_tick();
 void main_draw();
 void main_exit();
+void on_resize();
 
 int main() {
     // create the app
     app_create(800, 600, "My GLFW Window", 1);
+
+    // app setup
+    renderer_setGLClearColor(1, 1, 1, 1);
+    renderer_setGLCullMode(GL_BACK);
+    renderer_setGLDepthTest(GL_LESS);
+    
     // main app loop
-    app_loop(main_init, main_tick, main_draw, main_exit);
+    app_loop(main_init, main_tick, main_draw, main_exit, on_resize);
     // close the app when the loop is broken (you can break out of the loop ONLY by calling app_requestClose())
     app_terminate();
     
@@ -338,30 +384,109 @@ int main() {
 }
 
 unsigned int vao;
-unsigned int color_shader;
+unsigned int shader;
+unsigned int texture;
 Mesh* mesh;
+Transform* transform;
+Camera* camera;
+
+mat4 projectionMatrix;
+mat4 viewMatrix;
+mat4 modelMatrix;
 
 // init function (called before entering the app main loop)
 void main_init() {
-    color_shader = shader_create("./assets/shaders/color_vertex.glsl", "./assets/shaders/color_fragment.glsl");
+    // create shaders
+    shader = shader_create("./assets/shaders/texture_vertex.glsl", "./assets/shaders/texture_fragment.glsl");
+    shader_setInteger(shader, "texture", 0); // bind the texture unit 0
 
+    // create a cube
     float vertices[] = {
-        // position         // color
-        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0, 0.0,
-        0.5, -0.5, 0.0,     0.0, 1.0, 0.0, 0.0,
-        0.5, 0.5, 0.0,      0.0, 0.0, 1.0, 0.0,
-        -0.5, 0.5, 0.0,     1.0, 1.0, 1.0, 0.0
+        // front face
+        // position            // color                    UVs
+        -0.5f, -0.5f, 0.5f,    1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,       // 0
+         0.5f, -0.5f, 0.5f,    0.0f, 1.0f, 0.0f, 1.0f,     1.0f, 0.0f,       // 1
+         0.5f,  0.5f, 0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 2
+        -0.5f,  0.5f, 0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 3
+
+        // top face
+        // position            // color                    UVs
+        -0.5f, 0.5f, 0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,       // 4
+         0.5f, 0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f,       // 5
+         0.5f, 0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 6
+        -0.5f, 0.5f, -0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 7
+
+        // right face
+        // position            // color                    UVs
+         0.5f, -0.5f, 0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,       // 8
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f,       // 9
+         0.5f, 0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 10
+         0.5f, 0.5f, 0.5f,     1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 11
+
+        // bottom face
+        // position            // color                    UVs
+        -0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,       // 12
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f,       // 13
+         0.5f, -0.5f, 0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 14
+        -0.5f, -0.5f, 0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 15
+
+        // left face
+        // position            // color                    UVs
+        -0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,       // 16
+        -0.5f, -0.5f, 0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f,       // 17
+        -0.5f, 0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 18
+        -0.5f, 0.5f, -0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 19
+
+        // back face
+        // position            // color                    UVs
+         0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 0.0f,       // 20
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f,       // 21
+        -0.5f, 0.5f, -0.5f,    0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 1.0f,       // 22
+         0.5f, 0.5f, -0.5f,    1.0f, 1.0f, 1.0f, 1.0f,     0.0f, 1.0f,       // 23
     };
 
     unsigned int indices[] = {
+        // front face
         0, 1, 2,
-        0, 2, 3
+        0, 2, 3,
+        
+        // top face
+        4, 5, 6,
+        4, 6, 7,
+
+        // right face
+        8, 9, 10,
+        8, 10, 11,
+
+        // bottom face
+        12, 13, 14,
+        12, 14, 15,
+
+        // left face
+        16, 17, 18,
+        16, 18, 19,
+
+        // back face
+        20, 21, 22,
+        20, 22, 23
     };
+    
+    // setup camera
+    camera = camera_create();
+    camera->position.z = 3.0f;
+
+    // object position via transform
+    transform = transform_create();
+    // transform_setScale(transform, 200, 200, 200); // enable when in orthographic projection because otherwise the cube is too small
+
+    texture = texture_create("./assets/textures/wall.jpg", false);
 
     // create a mesh
-    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4, GL_TRIANGLES);
+    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
     mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
     mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
+    mesh_registerVertexAttribute(mesh, 2, 2); // uv attribute
+    mesh_assignTexture(mesh, texture, 0);
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -375,18 +500,85 @@ void main_tick() {
     if (input_isKeyPressed(GLFW_KEY_F11)) {
         window_toggleFullscreen();
     }
+
+    // change mesh transform and camera transform
+    vec3 frontMotion = vec3_zero();
+    vec3 sideMotion = vec3_zero();
+    vec3 upMotion = vec3_zero();
+    if (input_isKeyDown(GLFW_KEY_W)) frontMotion = camera_getForward(camera);
+    if (input_isKeyDown(GLFW_KEY_A)) sideMotion = camera_getLeft(camera);
+    if (input_isKeyDown(GLFW_KEY_S)) frontMotion = camera_getBackward(camera);
+    if (input_isKeyDown(GLFW_KEY_D)) sideMotion = camera_getRight(camera);
+    if (input_isKeyDown(GLFW_KEY_SPACE)) upMotion = camera_getUp(camera);
+    if (input_isKeyDown(GLFW_KEY_LEFT_SHIFT)) upMotion = camera_getDown(camera);
+
+    // combine the two movement vectors
+    vec3 move = vec3_sum(frontMotion, sideMotion);
+    move = vec3_sum(move, upMotion);
+    // normalize the vector to avoid moving faster when moving on more than one axis
+    move = vec3_normalize(move);
+
+    // make the vector magnitude go to the maximum speed (in this case 0.1f);
+    move = vec3_scale(move, 0.1f);
+
+    // camera motion speed is 0.1 units per tick
+    camera_moveByVector(camera, move);
+
+    // camera rotation speed is 1.5 degrees per tick
+    if (input_isKeyDown(GLFW_KEY_LEFT)) camera_rotate(camera, 0, 1.5f, 0);
+    if (input_isKeyDown(GLFW_KEY_RIGHT)) camera_rotate(camera, 0, -1.5f, 0);
+    if (input_isKeyDown(GLFW_KEY_UP)) camera_rotate(camera, 1.5f, 0, 0);
+    if (input_isKeyDown(GLFW_KEY_DOWN)) camera_rotate(camera, -1.5f, 0, 0);
+
+    // recalculate the view and model matrices
+    viewMatrix = camera_getViewMatrix(camera);
+    modelMatrix = transform_getModelMatrix(transform);
+
+    if (input_isKeyPressed(GLFW_KEY_F1)) {
+        // toggle, meybe preserve the gl modes in globals.h to access them later?
+        if (input_isKeyDown(GLFW_KEY_RIGHT_SHIFT)) renderer_setGLPolygonMode(GL_LINE);
+        else renderer_setGLPolygonMode(GL_FILL);
+    }
 }
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    renderer_useShader(color_shader);
+    // TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
+    renderer_useShader(shader);
+    // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER!!!
+    // upload the updated matrices
+    shader_setMatrix4(shader, "projection", projectionMatrix);
+    shader_setMatrix4(shader, "view", viewMatrix);
+    shader_setMatrix4(shader, "model", modelMatrix);
+
+    // renderer_bindTexture(texture, 0); // binding the texture to texture unit 0 (the active one by default)
     renderer_renderMesh(mesh);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
     mesh_destroy(mesh);
-    shader_destroy(color_shader);
+    texture_destroy(texture);
+    shader_destroy(shader);
+    transform_destroy(transform);
+    camera_destroy(camera);
+}
+
+// resize function (called once at the start after the main_init() call and once every time a window resize event occurs)
+void on_resize() {
+    // calculate the projection matrix (recalculte on window size change and fov change)
+    projectionMatrix = matrix_getPerspectiveProjection(
+        window_getWidth(),
+        window_getHeight(),
+        70.0f, 0.1f, 100.0f
+    );
+    // projectionMatrix = matrix_getOrthographicProjection(
+    //     -window_getWidth() / 2,
+    //     window_getWidth() / 2,
+    //     -window_getHeight() / 2,
+    //     window_getHeight() / 2,
+    //     -1000.0f, 1000.0f
+    // );
 }
 ```
 
@@ -397,12 +589,19 @@ Here is also the shader code:\
 
 layout (location = 0) in vec3 iPos;
 layout (location = 1) in vec4 iCol;
+layout (location = 2) in vec2 iUV;
 
 out vec4 oCol;
+out vec2 oUV;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main() {
+    gl_Position = projection * view * model * vec4(iPos, 1.0);
     oCol = iCol;
-    gl_Position = vec4(iPos.xyz, 1.0);
+    oUV = iUV;
 }
 ```
 
@@ -411,11 +610,153 @@ void main() {
 #version 330 core
 
 in vec4 oCol;
+in vec2 oUV;
 
 out vec4 fragColor;
 
+uniform bool debug_depth;
+uniform sampler2D texture;
+
 void main() {
-    fragColor = oCol;
+    vec4 outputColor;
+    if (debug_depth) {
+        outputColor = vec4(vec3(gl_FragCoord.z), 1.0);
+    } else {
+        outputColor = texture2D(texture, oUV) * oCol;
+    }
+    fragColor = outputColor;
+}
+```
+
+### Some theory and explainations [#](#table-of-contents)
+The theory behind the perspective rendering done in `main.c` can be explained breaking it down in the following smaller and simpler steps:
+1. Defining the cube
+2. Placing the cube in the world
+3. Creating a camera
+4. Applying perspective rules
+
+#### 1. Defining the mesh
+A mesh is a collection of vertices connected in a precise order.\
+A vertex is a collection of data (e.g.: position, color, texture coordinate, etc...).\
+In G3CE you can define a mesh with the mesh_create() function.\
+The mesh vertices positions are the location in space of the vertices relative to the mesh origin.\
+This means that when defining a mesh we are working in the so called "local space", where the orgin is the center of your mesh.
+
+#### 2. Placing the cube in the world
+Our cube will be positioned somewhere in the virtual world. This is when the transform object comes in handy.\
+The transform holds a position, a rotation and a scaling. You can modify those values as you want.
+
+Now, in order to actually move, rotate and scale our mesh in the world we must apply the transformations to the mesh vertices.
+A transformation is a mathematical operation that, given a vector (in our case all the vertex position), returns a new vector (all the new vertex position).
+
+Transformations can be represented with matrices, which are tables of numbers arrenged in a specific order, following a precise logic.
+
+This means we can have for example a translation matrix, which, when applied to a position vector changes it by a specific amount, embedded in the matrix itself, thus virtually "moving" the point represented by that vector (and so the whole mesh if we perform this operation for all of its vertices).
+The same can be said for a rotation matrix and a scaling matrix.
+
+Now, to apply a transformation we must multiply the corresponding matrix by the vector we want to transform, remembering that the **transformations are applied in reverse relatively to the matrix multiplication order** (matrix muliplication is not commutative).
+
+So for example, we can have a translation matrix $T$, a rotation matrix $R$ and a vertex position represente by the vector $\vec{v}$. To apply the rotation before the translation we first combine the transformations into a new matrix $M$:
+$$ M = T \cdot R $$
+And then we get take the transformed vector by applying the combined transformation to the vector:
+$$ \vec{v'} = M \cdot \vec{v} $$
+
+Now, this might seem hard at first, but even reading it a second time could make it clearer, so give it a try.\
+In any case, you won't be dealing too much with all of this, as G3CE automatically handles most of this transformation math for you.
+
+However here comes the really important part: the previously cited $M$ matrix is an example of a **MODEL MATRIX**, which is the matrix that let's us go from the **local space** (where vertices positions are defined relatively to the mesh origin) to the **world space** (where vertices positions are defined relatively to the world origin).\
+This is foundamental as we are essentially taking the mesh we've built before and now we are placing it in the world where and how we want it.
+
+As you can imagine at this point, the model matrix depends on the transform position, rotation and scale, and G3CE has a built-in function that build the model matrix for you.\
+The only thing you have to do as this point is to simply take the model matrix from the transform and assign it to the proper uniform value in the default shader.
+This is exactly what is happening here
+```C
+void main_draw() {
+    mat4 modelMatrix = transform_getModelMatrix(transform);
+    shader_setMatrix4(shader, "model", modelMatrix);
+}
+```
+
+#### 3. Creating a camera
+Now that we know how transformations work understanding the camera can be even easier!\
+The camera position and rotation can be thought as transformations too.\
+We can thus build the corresponding transformation matrix which is also known as **view matrix**.\
+
+At this point we should ask ourselves two questions:
+1. How does the camera actually see?
+2. Why is it called view matrix?
+
+Let's answer these questions.
+
+**1. The camera does not really see the world.**\
+OpenGL will render whatever is found into a certain volume, called a **frustum**. Every vertex inside the frustum is projected onto a plane (your screen) according to some projection rules (see the next chapter).
+
+So in order to move around the world we just need to move the frustum in the world to include or exclude the objects from our view.\
+We can easily imagine a camera moving in the world and the relative frustum attached to it that moves accordingly.
+
+Now we can't really move the frustum around the virtual world, but we can do the opposite: we can move the world around the frustum.\
+And in reality is the world that moves in reverse relatively to the camera.
+
+So if we position the camera (frustum) at (3, 0, 0) we can in fact move the entire world (translate all the meshes that populate it) by (-3, 0, 0).
+
+The **key idea** to understand all of this is that from the camera perspective it is indifferent whether we move the camera back by 3 units or we move the world forward by 3 units.
+
+By this point, it should be clear that to move the world we can apply a transformation matrix to all its meshes, but how do we build this matrix?
+
+**2. The reason behind the name "view matrix"**\
+This is where the **view matrix** plays its role.\
+After placing the objects in the world via the **model matrix**, we can, as said before, move and rotate it in reverse relatively to the camera position and rotation.
+
+How to apply these transformations?\
+Using a matrix of course: the **view matrix**.
+
+The **view matrix** transforms the world so that **everything is positioned as the camera views it**, thus the name "view matrix".
+
+To build such a matrix we simply negate the camera position and rotation angles and move make a matrix out of that.\
+Again, don't worry, G3CE builds the view matrix for you. You just have to move and rotate the camera, and to assign the view matrix to the shader uniform variable.
+```C
+void main_draw() {
+    // ...
+    mat4 viewMatrix = camera_getViewMatrix(camera);
+    shader_setMatrix4(shader, "view", viewMatrix);
+}
+```
+
+#### 4. Applying perspective rules
+Finally we should specify how we project the vertices on the plane.
+
+There are plenty of ways and technically there is no limit to how we project the vertices, but the ones that make more sense to us are the orthographic and the perspective projections.
+
+**Orthographic projection**\
+The projection lines are in this case parallel to eachother, so object keep their size regardless of their distance from the viewer.
+
+**Perspective projection**\
+This is the projection we are the most familiar with, as it is how our eyes and brains percieve the world.\
+In this case objects shrink as they get farther from the viewer, because the vertices are projected with lines that converge to a single point (the "center of projection").
+
+As you may imagine at this point, G3CE has a function to retrieve such matrices in a fast and simple way, so that you just have to set the proper uniform shader value to apply the projection rules you want.
+```C
+void main_draw() {
+    // ...
+    // perspective projection
+    // this will use a frustum view volume, giving the illusion of perspective
+    projectionMatrix = matrix_getPerspectiveProjection(
+        window_getWidth(),
+        window_getHeight(),
+        70.0f, 0.1f, 100.0f
+    );
+    // orthographic projection
+    // this will use a box view volume and everithing outside
+    // of said bounds will be clipped and not rendered
+    // remember to scale and position the objects accordingly
+    projectionMatrix = matrix_getOrthographicProjection(
+        -window_getWidth() / 2,
+        window_getWidth() / 2,
+        -window_getHeight() / 2,
+        window_getHeight() / 2,
+        -1000.0f, 1000.0f
+    );
+    shader_setMatrix4(shader, "projection", projectionMatrix);
 }
 ```
 
@@ -445,7 +786,10 @@ Home page: https://www.glfw.org/
 Image loader\
 Home page: https://github.com/nothings/stb
 
+A special mention and a super special thanks goes to the amazing people behind https://learnopengl.com/, who by making this knowledge free to access, also made this project possible.
+
 ### Version history [#](#table-of-contents)
++ **v1.0 b16092025-0:** implemented perspective and orthographic rendering via shaders, refined documentation (`README.md` file), fixed a couple bugs and typos here and there
 + **v1.0 b13092025-1:** added transform and camera objects
 + **v1.0 b13092025-0:** added linear algebra module
 + **v1.0 b12092025-0:** added 2D texture support
@@ -456,4 +800,4 @@ Home page: https://github.com/nothings/stb
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b13092025-1
+v1.0 b16092025-0
