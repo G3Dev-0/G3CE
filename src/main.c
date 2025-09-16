@@ -1,6 +1,7 @@
 #include "engine/app.h"
 #include "engine/core/window.h"
 #include "engine/core/input.h"
+#include "engine/core/object.h"
 #include "engine/math/transform.h"
 #include "engine/math/linal.h"
 #include "engine/math/camera.h"
@@ -29,21 +30,18 @@ int main() {
     return 0;
 }
 
-unsigned int vao;
 unsigned int shader;
 unsigned int texture;
-Mesh* mesh;
-Transform* transform;
+Object* cube;
 Camera* camera;
 
 mat4 projectionMatrix;
-mat4 viewMatrix;
-mat4 modelMatrix;
 
 // init function (called before entering the app main loop)
 void main_init() {
     // create shaders
     shader = shader_create("./assets/shaders/texture_vertex.glsl", "./assets/shaders/texture_fragment.glsl");
+    renderer_useShader(shader);
     shader_setInteger(shader, "texture", 0); // bind the texture unit 0
 
     // create a cube
@@ -120,20 +118,21 @@ void main_init() {
     // setup camera
     camera = camera_create();
     camera->position.z = 3.0f;
+    renderer_useCamera(camera);
     // camera_setRotation(camera, -30, 45, 0); // enable this when orthographic projection is on to have isometric view
-
-    // object position via transform
-    transform = transform_create();
-    transform_setScale(transform, 200, 200, 200);
 
     texture = texture_create("./assets/textures/wall.jpg", false);
 
     // create a mesh
-    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
-    mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
-    mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
-    mesh_registerVertexAttribute(mesh, 2, 2); // uv attribute
-    mesh_assignTexture(mesh, texture, 0);
+    // Mesh* mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
+    Mesh mesh = mesh_new(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
+    mesh_registerVertexAttribute(&mesh, 0, 3); // position attribute
+    mesh_registerVertexAttribute(&mesh, 1, 4); // color attribute
+    mesh_registerVertexAttribute(&mesh, 2, 2); // uv attribute
+    mesh_assignTexture(&mesh, texture, 0);
+
+    // create the cube object
+    cube = object_create(mesh);
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -177,10 +176,6 @@ void main_tick() {
     if (input_isKeyDown(GLFW_KEY_UP)) camera_rotate(camera, 1.5f, 0, 0);
     if (input_isKeyDown(GLFW_KEY_DOWN)) camera_rotate(camera, -1.5f, 0, 0);
 
-    // recalculate the view and model matrices
-    viewMatrix = camera_getViewMatrix(camera);
-    modelMatrix = transform_getModelMatrix(transform);
-
     if (input_isKeyPressed(GLFW_KEY_F1)) {
         // toggle, meybe preserve the gl modes in globals.h to access them later?
         if (input_isKeyDown(GLFW_KEY_RIGHT_SHIFT)) renderer_setGLPolygonMode(GL_LINE);
@@ -190,24 +185,21 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    // TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
-    renderer_useShader(shader);
+    // renderer_prepare(); // called by renderer_renderObject()
     // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER!!!
     // upload the updated matrices
     shader_setMatrix4(shader, "projection", projectionMatrix);
-    shader_setMatrix4(shader, "view", viewMatrix);
-    shader_setMatrix4(shader, "model", modelMatrix);
-
-    // renderer_bindTexture(texture, 0); // binding the texture to texture unit 0 (the active one by default)
-    renderer_renderMesh(mesh);
+    
+    renderer_renderObject(cube);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
-    mesh_destroy(mesh);
-    texture_destroy(texture);
+    // mesh_destroy(mesh);
+    object_destroy(cube);
+    // texture_destroy(texture); // no need for this as it is assigned to the cube object that is freed when calling object_destroy()
     shader_destroy(shader);
-    transform_destroy(transform);
+    // transform_destroy(transform);
     camera_destroy(camera);
 }
 
@@ -219,11 +211,11 @@ void on_resize() {
         window_getHeight(),
         70.0f, 0.1f, 100.0f
     );
-    projectionMatrix = matrix_getOrthographicProjection(
-        -window_getWidth() / 2,
-        window_getWidth() / 2,
-        -window_getHeight() / 2,
-        window_getHeight() / 2,
-        -1000.0f, 1000.0f
-    );
+    // projectionMatrix = matrix_getOrthographicProjection(
+    //     -window_getWidth() / 2,
+    //     window_getWidth() / 2,
+    //     -window_getHeight() / 2,
+    //     window_getHeight() / 2,
+    //     -1000.0f, 1000.0f
+    // );
 }

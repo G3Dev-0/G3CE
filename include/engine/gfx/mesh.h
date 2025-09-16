@@ -18,6 +18,9 @@ typedef struct {
     unsigned int textureUnit;
 } Mesh;
 
+// creates a stack allocated mesh and returns it. This does not need to be destroyed
+Mesh mesh_new(float* vertices, unsigned int verticesSize, unsigned int* indices, unsigned int indicesSize, unsigned int vertexLength, unsigned int drawMode);
+
 /*
 Creates a new mesh object and returns a pointer to it.
 You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore

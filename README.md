@@ -9,6 +9,7 @@
     - [**App**](#app-)
     - [**Window**](#window-)
     - [**Input**](#input-)
+    - [**Object**](#object-)
 
     **Math**
     - [**Linear Algebra**](#linear-algebra-)
@@ -86,6 +87,45 @@ This module contains all the useful handlers for keyboard and mouse input. Namel
 + `double input_getMouseX()`: returns the mouse x position in the window (0 to window_width - 1 from LEFT to RIGHT)
 + `double input_getMouseY()`: returns the mouse y position in the window (0 to window_height - 1 from TOP to BOTTOM)
 + `int input_getMouseScroll()`: returns the mouse scroll (0 when not scrolling, NEGATIVE when scrolling DOWNWARDS, POSITIVE when scrolling UPWARDS)
+
+#### Object [#](#table-of-contents)
+Objects are a simplification for creating a virtual object in the virtual world.\
+An object holds a `Mesh` and a `Transform`, as well as an assigned `shader`.
+You can easily change the object position, rotation and scale.
+In order to render an object you can call the `renderer_renderObject(Object* o)` function, which will perform the following operations in the following order:
+1. bind the object shader if the assigned shader is not 0, otherwise it will keep using the currently bound shader
+2. call `renderer_prepare()` to upload the currently active camera view matrix to the active shader
+3. upload the given object transform model matrix to correctly position the given object in the world and render it in place
+4. call `renderer_renderMesh()` to render the object mesh. This will also bind the texture assigned to the object mesh via mesh_assignTexture();
+
+Here is the actual object implementation:
++ `Object object_new(Mesh mesh)`: creates a stack allocated object using the given mesh, with a blank transform an assigned shader = 0. It does not need to be destroyed
+
++ `Object* object_create(Mesh mesh)`: creates an object with a given mesh and a blank transform (by default the assigned shader is 0).\
+YOU MUST DESTROY IT ONCE YOU'RE DONE WITH IT TO AVOID MEMORY LEAKS
++ `void object_destroy(Object* o)`: destroys the given object
+
++ `void object_setTransformByTransform(Object* o, Transform t)`: sets the given object transform to the given transform
++ `void object_setTransformByVectors(Object* o, vec3 position, vec3 rotation, vec3 scale)`: sets the given object transform vectors to the given transform vectors
++ `void object_setTransformByValues(Object* o, float x, float y, float z, float pitch, float yaw, float roll, float xs, float ys, float zs)`: sets the given object transform values to the given transform values
+
++ `void object_setPositionByVector(Object* o, vec3 position)`: sets the given object position to the given position vector
++ `void object_setRotationByVector(Object* o, vec3 rotation)`: sets the given object rotation to the given rotation vector
++ `void object_setScaleByVector(Object* o, vec3 scale)`: sets the given object scale to the given scale vector
+
++ `void object_setPositionByValues(Object* o, float x, float y, float z)`: sets the given object position to the given position values
++ `void object_setRotationByValues(Object* o, float pitch, float yaw, float roll)`: sets the given object rotation to the given rotation values
++ `void object_setScaleByValues(Object* o, float xs, float ys, float zs)`: sets the given object scale to the given scale values
+
++ `void object_changePositionByVector(Object* o, vec3 translation)`: increments the given object position by the given translation vector
++ `void object_changeRotationByVector(Object* o, vec3 rotation)`: increments the given object rotation by the given rotation vector
++ `void object_changeScaleByVector(Object* o, vec3 scaling)`: increments the given object scale by the given scaling vector
+
++ `void object_changePositionByValues(Object* o, float xm, float ym, float zm)`: increments the given object position by the given position values
++ `void object_changeRotationByValues(Object* o, float xr, float yr, float zr)`: increments the given object rotation by the given rotation values
++ `void object_changeScaleByValues(Object* o, float xs, float ys, float zs)`: increments the given object scale by the given scale values
+
++ `void object_assignShader(Object* o, unsigned int shader)`: assigns the given shader to the given object when calling renderer_renderObject(Object* o) the assigned shader will be bound if the assigned shader is 0, the renderer will keep using the currently bound shader
 
 #### Linear Algebra [#](#table-of-contents)
 The linear algebra (`linal.h`) module contains all the heavy math implementations for 2D, 3D and 4D vectors and matrices, as well as quaternions.
@@ -176,6 +216,7 @@ transform_destroy(transform);
 ```
 
 Here are the operations you can perform ona  transform:
++ `Transform transform_new()`: creates a stack allocated blank transform and returns it. This does not need to be destroyed
 + `Transform* transform_create()`: creates a blank transform (position and rotations will be zero vectors while scale will be a one vector) allocated on the heap and returns the pointer to it
 + `void transform_destroy(Transform* t)`: destroyes a previously created transform
 
@@ -247,32 +288,48 @@ The renderer module can be used to render meshed, enable shaders and have rapid 
 + `void renderer_useShader(unsigned int shader)`: uses a shader.\
 **Parameters:**
     - shader (*unsigned int*): the shader program id
-+ `void renderer_bindTexture(unsigned int texture, unsigned int unit)`: binds a texture.
++ `void renderer_bindTexture(unsigned int texture, unsigned int unit)`: binds a texture.\
 **Parameters:**
-    - texture (*unsigend int*): the shader program id
+    - texture (*unsigend int*): the texture id
+    - unit (*unsigend int*): the texture unit to bind the texture to
++ `void renderer_useCamera(Camera* camera)`: uses a camera.\
+**Parameters:**
+    - camera (Camera*): the pointer to the camera to use
++ `void renderer_prepare()`: prepares for rendering (automatically updates the view matrix is a camera and a shader with a view matrix uniform are being currently used)
 + `void renderer_renderMesh(Mesh* mesh)`: renders a given mesh.\
 **Parameters:**
     - mesh (*Mesh**): the mesh pointer
++ `void renderer_renderObject(Object* object)`: renders the given object using the shader assigned to the object via object_assignShader() (or the currently active one if the assigned shader is 0)
 
 #### Shader [#](#table-of-contents)
 Shaders are the GPU code that allows you to render anything on the screen. They are written in GLSL (GL Shading Language). With this module you can easily load them in code and use them when rendering.
 + `unsigned int shader_create(char* vertexPath, char* fragmentPath)`: creates a shader program from the given vertex and fragment shader codes ("./file" means it is in "g3ce") and returns its program ID
 + `void shader_destroy(unsigned int programID)`: destroys the given shader
+**Shader uniforms**
+Uniforms are values you can manually transfer from the CPU to the GPU at runtime. Using the following functions, you can transfer boolean, floating point, integer values as well as vectors and matrices
++ `bool shader_hasUniform(const unsigned int programID, const char* name)`: returns true if the given shader has a uniform with the given name, false othewrise
 + `void setBoolean(const unsigned int programID, const char* name, bool value)`: sets boolean uniform
 + `void setFloat(const unsigned int programID, const char* name, float value)`: sets float uniform
 + `void setInteger(const unsigned int programID, const char* name, int value)`: sets integer uniform
-+ `void setFloat2(const unsigned int programID, const char* name, float value[2])`: sets float vector 2 uniform
++ `void setFloat2(const unsigned int programID, const char* name, vec2 value)`: sets float vector 2 uniform
 + `void setInteger2(const unsigned int programID, const char* name, int value[2])`: sets int vector 2 uniform
-+ `void setFloat3(const unsigned int programID, const char* name, float value[3])`: sets float vector 3 uniform
++ `void setFloat3(const unsigned int programID, const char* name, vec3 value)`: sets float vector 3 uniform
 + `void setInteger3(const unsigned int programID, const char* name, int value[3])`: sets int vector 3 uniform
-+ `void setFloat4(const unsigned int programID, const char* name, float value[4])`: sets float vector 4 uniform
++ `void setFloat4(const unsigned int programID, const char* name, vec4 value)`: sets float vector 4 uniform
 + `void setInteger4(const unsigned int programID, const char* name, int value[4])`: sets int vector 4 uniform
++ `void shader_setMatrix2(const unsigned int programID, const char* name, mat2 value)`: sets 2x2 float matrix uniform.\
+YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER, so remember to call renderer_useShader(int shader) first!
++ `void shader_setMatrix3(const unsigned int programID, const char* name, mat3 value)`: sets 3x3 float matrix uniform.\
+YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER, so remember to call renderer_useShader(int shader) first!
++ `void shader_setMatrix4(const unsigned int programID, const char* name, mat4 value)`: sets 4x4 float matrix uniform.\
+YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER, so remember to call renderer_useShader(int shader) first!
 
 **Remember: a shader must always be destroyed when not used anymore!**
 
 #### Mesh [#](#table-of-contents)
 With the mesh module, you can easily create simple meshes starting from vertices, indices and a draw mode.
 After creating a mesh you can easily draw the mesh using a certain shader.
++ `Mesh mesh_new(float* vertices, unsigned int verticesSize, unsigned int* indices, unsigned int indicesSize, unsigned int vertexLength, unsigned int drawMode)`: creates a stack allocated mesh and returns it. This does not need to be destroyed
 + `Mesh* mesh_create(float* vertices, int verticesSize, unsigned int* indices, int indicesSize, int vertexLength, int drawMode)`: creates a new mesh object and returns a pointer to it.
 You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore
 in order to free the allocated memory
@@ -383,21 +440,18 @@ int main() {
     return 0;
 }
 
-unsigned int vao;
 unsigned int shader;
 unsigned int texture;
-Mesh* mesh;
-Transform* transform;
+Object* cube;
 Camera* camera;
 
 mat4 projectionMatrix;
-mat4 viewMatrix;
-mat4 modelMatrix;
 
 // init function (called before entering the app main loop)
 void main_init() {
     // create shaders
     shader = shader_create("./assets/shaders/texture_vertex.glsl", "./assets/shaders/texture_fragment.glsl");
+    renderer_useShader(shader);
     shader_setInteger(shader, "texture", 0); // bind the texture unit 0
 
     // create a cube
@@ -474,19 +528,21 @@ void main_init() {
     // setup camera
     camera = camera_create();
     camera->position.z = 3.0f;
-
-    // object position via transform
-    transform = transform_create();
-    // transform_setScale(transform, 200, 200, 200); // enable when in orthographic projection because otherwise the cube is too small
+    renderer_useCamera(camera);
+    // camera_setRotation(camera, -30, 45, 0); // enable this when orthographic projection is on to have isometric view
 
     texture = texture_create("./assets/textures/wall.jpg", false);
 
     // create a mesh
-    mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
-    mesh_registerVertexAttribute(mesh, 0, 3); // position attribute
-    mesh_registerVertexAttribute(mesh, 1, 4); // color attribute
-    mesh_registerVertexAttribute(mesh, 2, 2); // uv attribute
-    mesh_assignTexture(mesh, texture, 0);
+    // Mesh* mesh = mesh_create(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
+    Mesh mesh = mesh_new(vertices, sizeof(vertices), indices, sizeof(indices), 3+4+2, GL_TRIANGLES);
+    mesh_registerVertexAttribute(&mesh, 0, 3); // position attribute
+    mesh_registerVertexAttribute(&mesh, 1, 4); // color attribute
+    mesh_registerVertexAttribute(&mesh, 2, 2); // uv attribute
+    mesh_assignTexture(&mesh, texture, 0);
+
+    // create the cube object
+    cube = object_create(mesh);
 }
 
 // tick function (called once every frame, here you should put all you update code)
@@ -530,10 +586,6 @@ void main_tick() {
     if (input_isKeyDown(GLFW_KEY_UP)) camera_rotate(camera, 1.5f, 0, 0);
     if (input_isKeyDown(GLFW_KEY_DOWN)) camera_rotate(camera, -1.5f, 0, 0);
 
-    // recalculate the view and model matrices
-    viewMatrix = camera_getViewMatrix(camera);
-    modelMatrix = transform_getModelMatrix(transform);
-
     if (input_isKeyPressed(GLFW_KEY_F1)) {
         // toggle, meybe preserve the gl modes in globals.h to access them later?
         if (input_isKeyDown(GLFW_KEY_RIGHT_SHIFT)) renderer_setGLPolygonMode(GL_LINE);
@@ -543,24 +595,21 @@ void main_tick() {
 
 // draw function (called once every frame, here you should put all you rendering code)
 void main_draw() {
-    // TODO: add a UI renderer that has functions like write (text rendering) and shape rendering (like draw line, draw rect and draw circle)
-    renderer_useShader(shader);
+    // renderer_prepare(); // called by renderer_renderObject()
     // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER!!!
     // upload the updated matrices
     shader_setMatrix4(shader, "projection", projectionMatrix);
-    shader_setMatrix4(shader, "view", viewMatrix);
-    shader_setMatrix4(shader, "model", modelMatrix);
-
-    // renderer_bindTexture(texture, 0); // binding the texture to texture unit 0 (the active one by default)
-    renderer_renderMesh(mesh);
+    
+    renderer_renderObject(cube);
 }
 
 // exit function (called after breaking out from the app main loop, before terminating the app)
 void main_exit() {
-    mesh_destroy(mesh);
-    texture_destroy(texture);
+    // mesh_destroy(mesh);
+    object_destroy(cube);
+    // texture_destroy(texture); // no need for this as it is assigned to the cube object that is freed when calling object_destroy()
     shader_destroy(shader);
-    transform_destroy(transform);
+    // transform_destroy(transform);
     camera_destroy(camera);
 }
 
@@ -789,6 +838,7 @@ Home page: https://github.com/nothings/stb
 A special mention and a super special thanks goes to the amazing people behind https://learnopengl.com/, who by making this knowledge free to access, also made this project possible.
 
 ### Version history [#](#table-of-contents)
++ **v1.0 b16092025-1:** created object implementation
 + **v1.0 b16092025-0:** implemented perspective and orthographic rendering via shaders, refined documentation (`README.md` file), fixed a couple bugs and typos here and there
 + **v1.0 b13092025-1:** added transform and camera objects
 + **v1.0 b13092025-0:** added linear algebra module
@@ -800,4 +850,4 @@ A special mention and a super special thanks goes to the amazing people behind h
 
 ### About [#](#table-of-contents)
 Made by G3Dev\
-v1.0 b16092025-0
+v1.0 b16092025-1

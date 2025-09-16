@@ -8,8 +8,11 @@ Contains some useful rendering functions
 #include "engine/utils/console.h"
 
 #include "engine/gfx/renderer.h"
+#include "engine/gfx/shader.h"
 
 float clearColor[4] = { 1, 1, 1, 1 };
+Camera* activeCamera = NULL;
+int activeShader = 0;
 
 // sets the clear color with RGBA values (default color is white (1, 1, 1, 1))
 void renderer_setGLClearColor(float r, float g, float b, float a) {
@@ -85,16 +88,18 @@ void renderer_setGLDepthTest(unsigned int depthFunction) {
 /*
 Uses a shader.
 Parameters:
-    - shader (int): the shader program id
+    - shader (unsigned int): the shader program id
 */
 void renderer_useShader(unsigned int shader) {
     glUseProgram(shader);
+    activeShader = shader;
 }
 
 /*
 Binds a texture.
 Parameters:
-    - shader (int): the shader program id
+    - texture (unsigned int): the texture id
+    - unit (unsigned int): the texture unit to bind the texture to
 */
 void renderer_bindTexture(unsigned int texture, unsigned int unit) {
     if (unit > 32) {
@@ -103,6 +108,25 @@ void renderer_bindTexture(unsigned int texture, unsigned int unit) {
     }
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture);
+}
+
+/*
+Uses a camera.
+Parameters:
+    - camera (Camera*): the pointer to the camera to use
+*/
+void renderer_useCamera(Camera* camera) {
+    activeCamera = camera;
+}
+
+// prepares for rendering (automatically updates the view matrix is a camera and a shader with a view matrix uniform are being currently used)
+void renderer_prepare() {
+    if (shader_hasUniform(activeShader, "view")) {
+        console_warning("The current shader has no view matrix uniform! Try using another shader");
+    }
+    if (activeCamera != NULL && activeShader != 0) {
+        shader_setMatrix4(activeShader, "view", camera_getViewMatrix(activeCamera));
+    }
 }
 
 /*
@@ -126,4 +150,29 @@ void renderer_renderMesh(Mesh* mesh) {
     if (mesh->texture > 0) {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+}
+
+// renders the given object using the shader assigned to the object via object_assignShader()
+// (or the currently active one if the assigned shader is 0)
+// automatically called renderer_prepare() before rendering the object,
+// so you don't need to call it manually before calling this function
+void renderer_renderObject(Object* object) {
+    // bind the shader assigned to the given object
+    if (object->shader > 0) {
+        renderer_useShader(object->shader);
+    }
+
+    // assign the view matrix
+    renderer_prepare();
+
+    // assign the model matrix
+    if (shader_hasUniform(activeShader, "model")) {
+        shader_setMatrix4(activeShader, "model", transform_getModelMatrix(&(object->transform)));
+    } else {
+        console_warning("The current shader has no model matrix uniform! Try using another shader");
+        return;
+    }
+
+    // render the mesh
+    renderer_renderMesh(&(object->mesh));
 }

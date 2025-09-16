@@ -17,6 +17,9 @@ typedef struct {
     vec3 scale;
 } Transform;
 
+// creates a stack allocated blank transform and returns it. This does not need to be destroyed
+Transform transform_new();
+
 // creates a blank transform (posision and rotation are zero vectors, while scale is a one vector)
 // REMEMBER: you MUST also DESTROY IT at the end via transform_destroy()!
 Transform* transform_create();

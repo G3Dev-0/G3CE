@@ -6,9 +6,13 @@ Contains some useful rendering functions
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "engine/core/object.h"
+#include "engine/math/camera.h"
 #include "engine/gfx/mesh.h"
 
 extern float clearColor[4];
+extern Camera* activeCamera;
+extern int activeShader;
 
 // sets the clear color with RGBA values (default color is white (1, 1, 1, 1))
 void renderer_setGLClearColor(float r, float g, float b, float a);
@@ -37,16 +41,27 @@ void renderer_setGLDepthTest(unsigned int depthFunction);
 /*
 Uses a shader.
 Parameters:
-    - shader (int): the shader program id
+    - shader (unsigned int): the shader program id
 */
 void renderer_useShader(unsigned int shader);
 
 /*
 Binds a texture.
 Parameters:
-    - shader (int): the shader program id
+    - texuture (unsigned int): the texture id
+    - unit (unsigned int): the texture unit to bind the texture to
 */
 void renderer_bindTexture(unsigned int texture, unsigned int unit);
+
+/*
+Uses a camera.
+Parameters:
+    - camera (Camera*): the pointer to the camera to use
+*/
+void renderer_useCamera(Camera* camera);
+
+// prepares for rendering (automatically updates the view matrix is a camera and a shader with a view matrix uniform are being currently used)
+void renderer_prepare();
 
 /*
 Renders a given mesh.
@@ -54,5 +69,9 @@ Parameters:
     - mesh (Mesh): the mesh pointer
 */
 void renderer_renderMesh(Mesh* mesh);
+
+// renders the given object using the shader assigned to the object via object_assignShader()
+// (or the currently active one if the assigned shader is 0)
+void renderer_renderObject(Object* object);
 
 #endif

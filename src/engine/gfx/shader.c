@@ -68,6 +68,11 @@ void shader_destroy(unsigned int programID) {
 }
 
 // UNIFORMs
+// returns true if the given shader has a uniform with the given name, false othewrise
+bool shader_hasUniform(const unsigned int programID, const char* name) {
+    int location = glGetUniformLocation(programID, name);
+    return location != -1;
+}
 // sets boolean uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
 // so remember to call renderer_useShader(int shader) first!
@@ -92,9 +97,9 @@ void shader_setInteger(const unsigned int programID, const char* name, int value
 // sets float vector 2 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
 // so remember to call renderer_useShader(int shader) first!
-void shader_setFloat2(const unsigned int programID, const char* name, float value[2]) {
+void shader_setFloat2(const unsigned int programID, const char* name, vec2 value) {
     int location = glGetUniformLocation(programID, name);
-    glUniform2f(location, value[0], value[1]);
+    glUniform2f(location, value.x, value.y);
 }
 // sets int vector 2 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
@@ -106,9 +111,9 @@ void shader_setInteger2(const unsigned int programID, const char* name, int valu
 // sets float vector 3 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
 // so remember to call renderer_useShader(int shader) first!
-void shader_setFloat3(const unsigned int programID, const char* name, float value[3]) {
+void shader_setFloat3(const unsigned int programID, const char* name, vec3 value) {
     int location = glGetUniformLocation(programID, name);
-    glUniform3f(location, value[0], value[1], value[2]);
+    glUniform3f(location, value.x, value.y, value.z);
 }
 // sets int vector 3 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
@@ -120,9 +125,9 @@ void shader_setInteger3(const unsigned int programID, const char* name, int valu
 // sets float vector 4 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,
 // so remember to call renderer_useShader(int shader) first!
-void shader_setFloat4(const unsigned int programID, const char* name, float value[4]) {
+void shader_setFloat4(const unsigned int programID, const char* name, vec4 value) {
     int location = glGetUniformLocation(programID, name);
-    glUniform4f(location, value[0], value[1], value[2], value[3]);
+    glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 // sets int vector 4 uniform
 // YOU CAN UPLOAD UNIFORMS ONLY WHEN USING THE SHADER,

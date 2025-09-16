@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
     src/main.c
     src/engine/app.c
     src/engine/core/input.c
+    src/engine/core/object.c
     src/engine/core/window.c
 	src/engine/math/camera.c
 	src/engine/math/linal.c

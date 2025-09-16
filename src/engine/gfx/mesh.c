@@ -10,6 +10,49 @@ Handles mesh creation and destruction
 
 #include "engine/gfx/mesh.h"
 
+// creates a stack allocated mesh and returns it. This does not need to be destroyed
+Mesh mesh_new(float* vertices, unsigned int verticesSize, unsigned int* indices, unsigned int indicesSize, unsigned int vertexLength, unsigned int drawMode) {
+    // generate VAO and assign it to the mesh
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+
+    // bind the mesh VAO
+    glBindVertexArray(vao);
+
+    // generate VBO and assign it to the mesh
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
+
+    // generate EBO and assign it to the mesh
+    unsigned int ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
+
+    // unbind the mesh VAO
+    glBindVertexArray(0);
+
+    // unbind the VBO and the EBO ONLY AFTER UNBINDING THE VAO,
+    // otherwise the VBO and EBO unbinding operation gets registered into the VAO
+    // and nothing renders
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    return (Mesh) {
+        .vao = vao,
+        .vbo = vbo,
+        .ebo = ebo,
+        .drawMode = drawMode,
+        .lastOffset = 0,
+        .indicesLength = indicesSize / sizeof(int),
+        .stride = vertexLength * sizeof(float),
+        .texture = 0, // by default no texture is assigned
+        .textureUnit = 0 // by default is texture unit 0
+    };
+}
+
 /*
 Creates a new mesh object and returns a pointer to it.
 You MUST call mesh_destroy(Mesh*) once the mesh is not used anymore
@@ -34,11 +77,12 @@ Mesh* mesh_create(float* vertices, unsigned int verticesSize, unsigned int* indi
     }
 
     // set some usefull mesh variable values
-    mesh->lastOffset = 0;
     mesh->drawMode = drawMode;
+    mesh->lastOffset = 0;
     mesh->indicesLength = indicesSize / sizeof(int);
     mesh->stride = vertexLength * sizeof(float);
     mesh->texture = 0; // by default no texture is assigned
+    mesh->textureUnit = 0; // by default is texture unit 0
 
     // generate VAO and assign it to the mesh
     unsigned int vao;
