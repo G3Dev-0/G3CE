@@ -5,10 +5,10 @@ Contains some useful rendering functions
 
 #include <glad/glad.h>
 
+#include "engine/gfx/shader.h"
 #include "engine/utils/console.h"
 
 #include "engine/gfx/renderer.h"
-#include "engine/gfx/shader.h"
 
 float clearColor[4] = { 1, 1, 1, 1 };
 Camera* activeCamera = NULL;
